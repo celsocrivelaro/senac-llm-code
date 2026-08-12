@@ -2,6 +2,6 @@
 
 import ollama
 
-# Use the generate function for a one-off prompt
+# Usa a função generate para um prompt único
 result = ollama.generate(model='qwen2.5:0.5b', prompt='Por que o céu é azul?')
 print(result['response'])

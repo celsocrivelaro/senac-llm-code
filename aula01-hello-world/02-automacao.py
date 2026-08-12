@@ -1,6 +1,6 @@
 import ollama
 
-# Example: Summarize a paragraph of text
+# Exemplo: resumir um parágrafo de texto
 text = """
 OpenAI has introduced a new tool called Ollama that lets users run large language models on local machines.
 This approach emphasizes privacy and control, as data does not leave the user's environment.
