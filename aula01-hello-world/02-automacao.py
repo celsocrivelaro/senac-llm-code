@@ -8,7 +8,7 @@ load_dotenv()
 # Initialize the client targeting Mistral's API endpoint
 client = OpenAI(
     base_url="https://api.mistral.ai/v1",
-    api_key=os.environ.get("MISTRAL_API_KEY")
+    api_key=os.environ.get("OPENAI_API_KEY")
 )
 
 # Exemplo: resumir um parágrafo de texto

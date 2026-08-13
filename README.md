@@ -19,14 +19,13 @@ Na raiz do projeto, copie o arquivo de exemplo:
 cp .env.example .env
 ```
 
-Abra o `.env` e cole a **mesma chave** nas duas variáveis:
+Abra o `.env` e cole a sua chave:
 
 ```
-MISTRAL_API_KEY=sua-chave-aqui
 OPENAI_API_KEY=sua-chave-aqui
 ```
 
-As duas recebem o mesmo valor porque usamos o SDK da OpenAI apontado para a Mistral: o nosso código lê `MISTRAL_API_KEY`, e algumas bibliotecas do ecossistema procuram `OPENAI_API_KEY` por conta própria.
+A variável se chama `OPENAI_API_KEY` (e não `MISTRAL_API_KEY`) porque usamos o SDK da OpenAI apontado para a Mistral — é o nome que o SDK e as bibliotecas do ecossistema procuram por padrão. O valor, porém, é a chave da Mistral.
 
 Os scripts carregam esse arquivo com `load_dotenv()`, então a chave nunca fica escrita no código. O `.env` está no `.gitignore` — **nunca comite a sua chave**.
 
@@ -69,7 +68,7 @@ python aula01-hello-world/00-prompt.py
 ## Problemas comuns
 
 - **`AuthenticationError` / `401`**: a chave está errada ou o `.env` não foi criado. Confira o passo 1.
-- **`api_key client option must be set`**: a variável `MISTRAL_API_KEY` está vazia — o `.env` existe, mas sem valor preenchido.
+- **`api_key client option must be set`**: a variável `OPENAI_API_KEY` está vazia — o `.env` existe, mas sem valor preenchido.
 - **`ModuleNotFoundError: No module named 'openai'`**: o virtual env não está ativo ou as dependências não foram instaladas. Repita os passos 2 e 3.
 - **`429 rate limit`**: muitas chamadas em sequência. Espere alguns segundos entre execuções.
 - **Para rodar sem internet / sem chave**: o mesmo código funciona com o [Ollama](https://ollama.com) local, trocando o cliente por
