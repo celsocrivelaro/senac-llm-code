@@ -1,7 +1,15 @@
-import ollama
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
-# Escolhe um modelo com suporte a chat (garanta que já foi baixado)
-model_name = 'qwen2.5:0.5b'
+# Carrega as variáveis do arquivo .env
+load_dotenv()
+
+# Initialize the client targeting Mistral's API endpoint
+client = OpenAI(
+    base_url="https://api.mistral.ai/v1",
+    api_key=os.environ.get("MISTRAL_API_KEY")
+)
 
 # Inicia a conversa com um prompt de sistema (opcional) e uma mensagem do usuário
 # system - instruções de como o sistema deve se comportar
@@ -13,8 +21,8 @@ messages = [
 ]
 
 # Primeira resposta do bot
-response = ollama.chat(model=model_name, messages=messages)
-print("Bot:", response.message.content)
+response = client.chat.completions.create(model="mistral-small-latest", messages=messages)
+print("Bot:", response.choices[0].message.content)
 
 # Continua a conversa:
 while True:
@@ -23,7 +31,7 @@ while True:
         break  # sai do loop quando a entrada é vazia
     # pode adicionar mais mensagens como contexto
     messages.append({"role": "user", "content": user_input})
-    response = ollama.chat(model=model_name, messages=messages)
-    answer = response.message.content
+    response = client.chat.completions.create(model="mistral-small-latest", messages=messages)
+    answer = response.choices[0].message.content
     print("Bot:", answer)
     messages.append({"role": "assistant", "content": answer})

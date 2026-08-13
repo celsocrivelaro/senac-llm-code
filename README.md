@@ -1,43 +1,34 @@
 # senac-llm-code
 
-Exemplos de código do curso de LLMs do Senac. Os exemplos rodam **100% localmente**, usando o [Ollama](https://ollama.com) para servir o modelo — nenhuma chave de API é necessária.
+Exemplos de código do curso de LLMs do Senac. Os exemplos usam o SDK da **OpenAI** apontado para a **API da Mistral** (`base_url="https://api.mistral.ai/v1"`), com o modelo `mistral-small-latest`.
 
 ## Pré-requisitos
 
 - **Python 3.10+** (o projeto foi testado com 3.14)
-- **Ollama** instalado e rodando
+- Uma **chave de API da Mistral**
 
-## 1. Instalar o Ollama e baixar o modelo
+## 1. Criar a chave de API e o arquivo `.env`
 
-Instale o Ollama:
+Acesse **https://admin.mistral.ai/** e faça login (ou crie uma conta gratuita). No painel, vá em **API Keys** → **Create new key**, dê um nome para a chave e copie o valor gerado.
 
-- **macOS / Windows**: baixe o instalador em https://ollama.com/download
-- **macOS via Homebrew**: `brew install ollama`
-- **Linux**: `curl -fsSL https://ollama.com/install.sh | sh`
+> A chave é exibida **uma única vez**. Se você fechar a janela sem copiar, será preciso criar outra.
 
-Confirme a instalação:
+Na raiz do projeto, copie o arquivo de exemplo:
 
 ```bash
-ollama --version
+cp .env.example .env
 ```
 
-Baixe o modelo usado nos exemplos (`qwen2.5:0.5b` — cerca de 400 MB, leve o suficiente para rodar em CPU):
+Abra o `.env` e cole a **mesma chave** nas duas variáveis:
 
-```bash
-ollama pull qwen2.5:0.5b
+```
+MISTRAL_API_KEY=sua-chave-aqui
+OPENAI_API_KEY=sua-chave-aqui
 ```
 
-Teste se o modelo responde:
+As duas recebem o mesmo valor porque usamos o SDK da OpenAI apontado para a Mistral: o nosso código lê `MISTRAL_API_KEY`, e algumas bibliotecas do ecossistema procuram `OPENAI_API_KEY` por conta própria.
 
-```bash
-ollama run qwen2.5:0.5b "Olá, tudo bem?"
-```
-
-O Ollama precisa estar rodando em background para os scripts funcionarem. No macOS e Windows o app já faz isso; se necessário, suba o servidor manualmente:
-
-```bash
-ollama serve
-```
+Os scripts carregam esse arquivo com `load_dotenv()`, então a chave nunca fica escrita no código. O `.env` está no `.gitignore` — **nunca comite a sua chave**.
 
 ## 2. Criar o virtual env
 
@@ -69,7 +60,7 @@ pip3 install -r requirements.txt
 
 ## 4. Rodar os exemplos
 
-Com o virtual env ativo e o Ollama rodando:
+Com o virtual env ativo:
 
 ```bash
 python aula01-hello-world/00-prompt.py
@@ -77,7 +68,9 @@ python aula01-hello-world/00-prompt.py
 
 ## Problemas comuns
 
-- **`ConnectionError` / `connection refused`**: o servidor do Ollama não está rodando. Execute `ollama serve`.
-- **`model "qwen2.5:0.5b" not found`**: falta baixar o modelo. Execute `ollama pull qwen2.5:0.5b`.
-- **`ModuleNotFoundError: No module named 'ollama'`**: o virtual env não está ativo ou as dependências não foram instaladas. Repita os passos 2 e 3.
-- **Respostas estranhas ou fora de formato**: o `qwen2.5:0.5b` é um modelo bem pequeno, escolhido pela velocidade. Para respostas melhores, troque o modelo nos scripts por um maior (ex.: `ollama pull qwen2.5:3b`).
+- **`AuthenticationError` / `401`**: a chave está errada ou o `.env` não foi criado. Confira o passo 1.
+- **`api_key client option must be set`**: a variável `MISTRAL_API_KEY` está vazia — o `.env` existe, mas sem valor preenchido.
+- **`ModuleNotFoundError: No module named 'openai'`**: o virtual env não está ativo ou as dependências não foram instaladas. Repita os passos 2 e 3.
+- **`429 rate limit`**: muitas chamadas em sequência. Espere alguns segundos entre execuções.
+- **Para rodar sem internet / sem chave**: o mesmo código funciona com o [Ollama](https://ollama.com) local, trocando o cliente por
+  `OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")` e o modelo por um baixado com `ollama pull` (ex.: `qwen2.5:0.5b`).
