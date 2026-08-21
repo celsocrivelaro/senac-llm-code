@@ -24,11 +24,11 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
-MODELO = "mistral-small-latest"
+MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 TENTATIVAS = 6
 TEMPERATURA = 0.7      # alta de propósito: queremos ver o formato quebrar
 PAUSA = 0.4

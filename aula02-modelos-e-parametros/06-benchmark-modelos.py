@@ -22,25 +22,38 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
-# --------------------------------------------------------------------------
-# PREENCHA os preços consultando https://mistral.ai/pricing (US$ por 1M tokens)
-# e anote a data da consulta. Preço de LLM muda; material impresso mente.
-# Deixe None no que você não preencher — o script mostra "-" no custo.
+# Os três modelos comparados — um pequeno, um médio e um grande.
+#
+# Estes ficam fixos aqui, e não no .env, porque eles NÃO são configuração: são
+# o objeto do experimento. O gráfico deste script só significa algo se você
+# souber exatamente quais modelos entraram na conta, e cada nome vem com um
+# preço ao lado que tem de mudar junto.
+#
+# Confirme com 00-catalogo-modelos.py quais a sua chave enxerga e edite abaixo
+# se algum não estiver disponível — os preços na mesma linha.
+#
+# CONFIRA os preços em https://mistral.ai/pricing (US$ por 1M tokens) e anote a
+# data. Preço de LLM muda; material impresso mente. Deixe None no que não
+# souber — o script mostra "-" na coluna de custo.
+#
 # Consultado em: ____/____/______
-# --------------------------------------------------------------------------
-PRECOS = {
-    # "modelo":                  {"entrada": 0.00, "saida": 0.00},
-    "ministral-3b-latest":       {"entrada": 0.10, "saida": 0.10},
-    "mistral-small-latest":      {"entrada": 0.15, "saida": 0.60},
-    "mistral-large-latest":      {"entrada": 0.50, "saida": 1.50},
-}
 
-# Confirme com 00-catalogo-modelos.py quais destes a sua chave enxerga.
-MODELOS = list(PRECOS.keys())
+MODELO_PEQUENO = "ministral-3b-latest"
+MODELO_MEDIO = "mistral-small-latest"
+MODELO_GRANDE = "mistral-large-latest"
+
+MODELOS = [MODELO_PEQUENO, MODELO_MEDIO, MODELO_GRANDE]
+
+PRECOS = {
+    # modelo:       {"entrada": US$/1M, "saida": US$/1M},
+    MODELO_PEQUENO: {"entrada": 0.10, "saida": 0.10},
+    MODELO_MEDIO:   {"entrada": 0.15, "saida": 0.60},
+    MODELO_GRANDE:  {"entrada": 0.50, "saida": 1.50},
+}
 
 # Troque por tarefas do SEU domínio — é esse o ponto do benchmark próprio.
 TAREFAS = [

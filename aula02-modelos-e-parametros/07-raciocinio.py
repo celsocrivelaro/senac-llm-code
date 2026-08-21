@@ -21,11 +21,13 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
-# Confirme os nomes com 00-catalogo-modelos.py e ajuste se necessário.
+# Os dois modelos do experimento ficam fixos aqui, e não no .env: a comparação
+# só faz sentido entre um modelo instruct e um de raciocínio nomeados. Confirme
+# com 00-catalogo-modelos.py e edite se algum não estiver disponível.
 MODELO_INSTRUCT = "mistral-small-latest"
 MODELO_RACIOCINIO = "magistral-small-latest"
 

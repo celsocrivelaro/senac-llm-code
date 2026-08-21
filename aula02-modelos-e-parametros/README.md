@@ -26,11 +26,24 @@ python aula02-modelos-e-parametros/00-catalogo-modelos.py
 
 Dois ajustes que você provavelmente vai precisar fazer:
 
-1. **Nomes de modelo** — `06` e `07` trazem uma lista no topo do arquivo.
-   Confira com o `00` e troque o que a sua chave não enxergar.
-2. **Preços** — o `06` tem um dicionário `PRECOS` com os campos em branco de
-   propósito. Preencha consultando <https://mistral.ai/pricing> e anote a data.
-   Preço de LLM muda; material que finge saber o preço de amanhã mente.
+1. **Nomes de modelo** — dois lugares diferentes, de propósito:
+
+   - nos scripts **`00` a `05`**, o modelo vem do `.env` (`LLM_MODELO`), junto
+     com o endpoint (`LLM_BASE_URL`). Nenhum nome está escrito no código, então
+     dá para apontar tudo para um Ollama local sem editar script — veja o
+     README da raiz;
+   - nos scripts **`06`** e **`07`**, os nomes estão **fixos no topo do
+     arquivo**. Ali eles não são configuração: são o experimento. O `06`
+     compara um modelo pequeno, um médio e um grande com o preço de cada um ao
+     lado; o `07` compara um instruct com um de raciocínio. Trocar isso pelo
+     `.env` esconderia justamente a informação que dá sentido à tabela.
+
+   Rode o `00` primeiro e, se algum modelo não aparecer para a sua chave, edite
+   o topo do `06` e do `07`.
+2. **Preços** — o `06` tem um dicionário `PRECOS` logo abaixo dos modelos.
+   Confira os valores em <https://mistral.ai/pricing> e anote a data da
+   consulta; preço de LLM muda, e material que finge saber o preço de amanhã
+   mente. Se você trocar um modelo, troque o preço na mesma linha.
 
 ## Custo e rate limit
 

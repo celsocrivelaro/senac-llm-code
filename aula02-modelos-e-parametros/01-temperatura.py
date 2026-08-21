@@ -15,11 +15,11 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
-MODELO = "mistral-small-latest"
+MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 PROMPT = "Em uma única frase, descreva um café da manhã."
 
 TEMPERATURAS = [0.0, 0.3, 0.7, 1.0, 1.5]

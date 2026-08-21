@@ -13,7 +13,7 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 

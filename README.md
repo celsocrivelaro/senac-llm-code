@@ -29,6 +29,13 @@ A variável se chama `OPENAI_API_KEY` (e não `MISTRAL_API_KEY`) porque usamos o
 
 Os scripts carregam esse arquivo com `load_dotenv()`, então a chave nunca fica escrita no código. O `.env` está no `.gitignore` — **nunca comite a sua chave**.
 
+Há dois modelos de arquivo no repositório, e você copia **um** deles para `.env`:
+
+| Arquivo | Para que |
+|---|---|
+| `.env.example` | a configuração padrão do curso: API da Mistral |
+| `.env.ollama` | rodar local com o [Ollama](https://ollama.com), sem internet e sem custo |
+
 ## 2. Criar o virtual env
 
 Na raiz do projeto:
@@ -65,11 +72,57 @@ Com o virtual env ativo:
 python aula01-hello-world/00-prompt.py
 ```
 
+## 5. Trocando de provedor ou de modelo
+
+Os exemplos da **aula 02** não têm endereço de API nem nome de modelo escritos
+no código: eles leem do `.env`, com um valor padrão embutido. Isso significa
+que o `.env` com só a `OPENAI_API_KEY` continua funcionando — e que trocar de
+provedor é mudar uma linha, não editar oito arquivos.
+
+| Variável | Padrão | Para que serve |
+|---|---|---|
+| `LLM_BASE_URL` | `https://api.mistral.ai/v1` | qualquer endpoint compatível com a API da OpenAI |
+| `LLM_MODELO` | `mistral-small-latest` | o modelo padrão dos exemplos |
+
+Duas exceções: os scripts **`06-benchmark-modelos.py`** e **`07-raciocinio.py`**
+têm os nomes dos modelos **fixos no código**. Ali os modelos não são
+configuração — são o objeto do experimento, cada um com o preço ao lado, e a
+tabela que eles produzem só significa algo se você souber exatamente quem
+entrou na comparação. Para trocar, edite o topo daqueles dois arquivos.
+
+Rodando tudo local, de graça, com o [Ollama](https://ollama.com): baixe o
+modelo e troque o `.env`.
+
+```bash
+ollama pull qwen3.6:35b     # confirme a tag com `ollama list`
+cp .env.ollama .env
+```
+
+O `.env.ollama` já vem com o endpoint, a chave de fachada e o modelo
+preenchidos — e com as duas advertências que valem para essa configuração
+(memória necessária para um modelo de 35B, e quais recursos da API o Ollama
+não tem).
+
+Essa portabilidade é o assunto da nota 01 da aula 02: o formato
+`chat/completions` virou padrão de fato, então **isolar o endpoint e o nome do
+modelo em um único lugar** é uma decisão de arquitetura que sai de graça. Se
+você espalhar `model="mistral-small-latest"` por trinta arquivos, se amarrou ao
+provedor sem precisar.
+
+> Atenção: compatível não é idêntico. O Ollama não expõe tudo o que a API
+> expõe (`response_format` com JSON Schema, por exemplo), e a contagem de
+> tokens no streaming pode não vir. Para os experimentos de custo (`06`) e de
+> saída estruturada (`05`), use a API.
+
 ## Problemas comuns
 
 - **`AuthenticationError` / `401`**: a chave está errada ou o `.env` não foi criado. Confira o passo 1.
 - **`api_key client option must be set`**: a variável `OPENAI_API_KEY` está vazia — o `.env` existe, mas sem valor preenchido.
 - **`ModuleNotFoundError: No module named 'openai'`**: o virtual env não está ativo ou as dependências não foram instaladas. Repita os passos 2 e 3.
 - **`429 rate limit`**: muitas chamadas em sequência. Espere alguns segundos entre execuções.
-- **Para rodar sem internet / sem chave**: o mesmo código funciona com o [Ollama](https://ollama.com) local, trocando o cliente por
-  `OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")` e o modelo por um baixado com `ollama pull` (ex.: `qwen2.5:0.5b`).
+- **`model not found` / `404` rodando com o Ollama**: a tag em `LLM_MODELO` não
+  bate com nenhum modelo baixado. Rode `ollama list` e corrija o `.env`.
+- **Para rodar sem internet / sem chave**: os exemplos da aula 02 leem o
+  endpoint e o modelo do `.env`, então o mesmo código roda com o
+  [Ollama](https://ollama.com) local sem editar script nenhum — é só
+  `cp .env.ollama .env` (passo 5).
