@@ -19,10 +19,18 @@ tarefa e o modelo ficam fixos — o que muda de uma condição para outra é
 | `02-chain-of-thought.py` | Três formas de montar o mesmo pedido: direto, com "vamos pensar passo a passo", e com um exemplo resolvido. Mostra o que muda **no texto da resposta**. |
 | `03-self-consistency.py` | O mesmo prompt do `02`, pedindo N respostas e ficando com a majoritária. Mostra a distribuição dos votos. |
 | `04-tool-calling.py` | O laço completo em quatro tempos, com duas ferramentas e log de cada chamada. |
+| `05-versao-de-prompt.py` | Duas versões do mesmo prompt — diferença de **uma palavra** — contra a mesma suíte de regressão. Mostra o que a suíte pega e o revisor humano não. |
 
 `dados.py` guarda o conjunto de teste e os exemplos usados pelos scripts
 `00` e `01` — num lugar só, de propósito: é o mesmo conjunto nos dois,
 senão os experimentos não seriam comparáveis entre si.
+
+`prompts/` guarda as duas versões do prompt usadas pelo `05`. Antes de rodar
+esse script, veja a diferença entre elas:
+
+```bash
+diff aula03-prompt/prompts/extracao-v1.md aula03-prompt/prompts/extracao-v2.md
+```
 
 ## Antes de rodar
 
