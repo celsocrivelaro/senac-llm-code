@@ -1,5 +1,5 @@
 # Aula 03 — Prompt engineering
-# 05 — Tool calling: o laço completo, em quatro tempos.
+# 04 — Tool calling: o laço completo, em quatro tempos (o padrão ReAct).
 #
 #   1. VOCÊ declara as ferramentas na chamada
 #   2. O MODELO decide  -> finish_reason="tool_calls" + nome e argumentos
@@ -8,6 +8,23 @@
 #
 # O modelo NUNCA executa nada. Ele nem sabe que as suas funções existem como
 # código — só viu a descrição delas. Toda a segurança mora nessa separação.
+#
+# ESTE LAÇO TEM NOME: ReAct (Reasoning + Acting, Yao et al., 2022) — o mesmo
+# padrão que vocês viram na aula 01, nota 03. A correspondência:
+#
+#     Thought      -> o modelo decide (finish_reason="tool_calls")
+#     Action       -> o SEU código executa a função Python
+#     Observation  -> a mensagem role="tool" que você devolve
+#
+# O ReAct é de 2022, ANTES de existir tool calling nativo. Na formulação
+# original o laço era emulado em TEXTO: o modelo escrevia literalmente
+# "Thought: ... / Action: consultar_pedido[48219] / Observation: ..." e o
+# programa procurava a linha "Action:" com uma expressão regular — que
+# quebrava a cada variação de formato. Hoje o schema garante a estrutura.
+# O padrão não mudou; ele saiu do prompt e foi para o schema.
+#
+# O log abaixo usa os nomes do paper de propósito, para você ver o padrão
+# acontecendo.
 #
 # Este é o mesmo mecanismo da saída estruturada da aula 02 (nota 02, §7):
 # o campo `parameters` de cada ferramenta É um JSON Schema.
@@ -131,22 +148,27 @@ SYSTEM = (
 
 
 def executar(chamada):
-    """Passo 3: o SEU código executa."""
+    """Passo 3 — a ACTION do ReAct: o SEU código executa."""
     nome = chamada.function.name
     try:
         argumentos = json.loads(chamada.function.arguments)
     except json.JSONDecodeError:
         return {"erro": "argumentos não são JSON válido"}
 
-    print(f"   [ferramenta] {nome}({argumentos})")
+    print(f"   ACTION       {nome}({argumentos})")
 
     funcao = FERRAMENTAS.get(nome)
     if funcao is None:                       # o modelo inventou o nome
-        return {"erro": f"ferramenta desconhecida: {nome}"}
-    try:
-        return funcao(**argumentos)
-    except TypeError as erro:                # argumentos fora do esperado
-        return {"erro": f"argumentos inválidos: {erro}"}
+        resultado = {"erro": f"ferramenta desconhecida: {nome}"}
+    else:
+        try:
+            resultado = funcao(**argumentos)
+        except TypeError as erro:            # argumentos fora do esperado
+            resultado = {"erro": f"argumentos inválidos: {erro}"}
+
+    # A OBSERVATION do ReAct: é isto que volta para o contexto do modelo.
+    print(f"   OBSERVATION  {json.dumps(resultado, ensure_ascii=False)[:68]}")
+    return resultado
 
 
 def rodar(pergunta, max_passos=MAX_PASSOS):
@@ -165,7 +187,8 @@ def rodar(pergunta, max_passos=MAX_PASSOS):
         escolha = resposta.choices[0]
         msg = escolha.message
 
-        print(f"   passo {passo}: finish_reason={escolha.finish_reason} | "
+        # A THOUGHT do ReAct: o modelo decidiu se age ou responde.
+        print(f"   passo {passo} · THOUGHT  finish_reason={escolha.finish_reason} | "
               f"tokens: {resposta.usage.prompt_tokens} entrada, "
               f"{resposta.usage.completion_tokens} saída")
 
@@ -218,6 +241,12 @@ print(
     "  4. Olhe os tokens de ENTRADA subindo a cada passo: todo o histórico é\n"
     "     reenviado a cada volta. É por isso que max_passos existe — sem\n"
     "     teto, um modelo em laço fica rodando sozinho.\n"
+    "\n"
+    "  5. Releia o log: THOUGHT -> ACTION -> OBSERVATION -> THOUGHT ... É o\n"
+    "     padrão ReAct acontecendo. Antes do tool calling nativo, essas três\n"
+    "     palavras eram escritas pelo MODELO, em texto, e o programa as\n"
+    "     procurava com regex. Hoje elas são a estrutura da API — e as\n"
+    "     impressões acima só estão nomeando o que já estava lá.\n"
     "\n"
     "  O modelo não ficou mais inteligente — ele continua sem saber nada sobre\n"
     "  os seus pedidos. O que mudou é que agora existe um caminho para a\n"
