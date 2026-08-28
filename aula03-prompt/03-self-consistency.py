@@ -8,8 +8,9 @@
 # Caminhos errados tendem a errar de formas diferentes; o certo tende a
 # convergir. A maioria filtra o ruído.
 #
-# Aqui o parâmetro `n` da aula 02 (nota 02, §4.5) ganha uso real: você paga
-# o prompt UMA vez e as saídas N vezes.
+# Do ponto de vista de construção de prompt, o prompt é o MESMO do script 02
+# (zero-shot CoT). O que muda é o parâmetro `n` da aula 02 (nota 02, §4.5):
+# uma única requisição devolve N respostas independentes.
 #
 # Paper: https://arxiv.org/abs/2203.11171
 
@@ -29,10 +30,6 @@ client = OpenAI(
 
 MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 PAUSA = 0.6
-
-# CONFIRA em https://mistral.ai/pricing. Consultado em: ____/____/______
-PRECO_ENTRADA = 0.15
-PRECO_SAIDA = 0.60
 
 # Temperatura > 0 é REQUISITO da técnica: sem variação entre as amostras,
 # os N raciocínios seriam iguais e o voto não decidiria nada.
@@ -56,6 +53,7 @@ PROBLEMAS = [
      "cheios. Quantas caixas sobram fora dos paletes cheios?", 12),
 ]
 
+# O mesmo prompt do script 02, condição B.
 PROMPT = ("{enunciado}\n\nVamos pensar passo a passo.\n\n"
           "Termine com uma última linha exatamente assim:\nRESPOSTA: <número>")
 
@@ -79,8 +77,7 @@ def amostrar(enunciado, n):
         max_tokens=800,
         n=n,
     )
-    votos = [extrair(e.message.content or "") for e in resposta.choices]
-    return votos, resposta.usage
+    return [extrair(e.message.content or "") for e in resposta.choices]
 
 
 def votar(votos):
@@ -98,53 +95,46 @@ resumo = []
 
 for n in VALORES_DE_N:
     print(f"### N = {n}")
-    acertos = entrada = saida = 0
+    acertos = 0
 
     for enunciado, esperado in PROBLEMAS:
         try:
-            votos, uso = amostrar(enunciado, n)
+            votos = amostrar(enunciado, n)
         except Exception as erro:              # noqa: BLE001 — didático
             print(f"  falhou (n={n} pode não ser suportado): "
                   f"{type(erro).__name__}: {str(erro)[:60]}")
             break
-
-        entrada += uso.prompt_tokens
-        saida += uso.completion_tokens
 
         vencedor, contagem = votar(votos)
         ok = vencedor == esperado
         acertos += ok
 
         distribuicao = " ".join(f"{v}×{c}" for v, c in contagem.most_common())
-        marca = "ok  " if ok else "ERRO"
-        print(f"  {marca} esperado={esperado:<5} voto={str(vencedor):<6} "
-              f"[{distribuicao}]")
+        print(f"  {'ok  ' if ok else 'ERRO'} esperado={esperado:<5} "
+              f"voto={str(vencedor):<6} [{distribuicao}]")
         time.sleep(PAUSA)
     else:
-        custo = (entrada * PRECO_ENTRADA + saida * PRECO_SAIDA) / 1_000_000
-        resumo.append((n, acertos, entrada, saida, custo))
-        print(f"  -> {acertos}/{len(PROBLEMAS)} | entrada {entrada} | "
-              f"saída {saida} | US$ {custo:.6f}\n")
+        resumo.append((n, acertos))
+        print(f"  -> {acertos}/{len(PROBLEMAS)} corretos\n")
 
 if resumo:
-    print("=" * 70)
-    print(f"{'N':>3} {'acertos':>10} {'entrada':>9} {'saída':>8} {'US$':>10} {'× base':>8}")
-    base = resumo[0][4]
-    for n, acertos, entrada, saida, custo in resumo:
-        print(f"{n:>3} {acertos:>8}/{len(PROBLEMAS)} {entrada:>9} {saida:>8} "
-              f"{custo:>10.6f} {custo / base:>7.1f}x")
+    print("=" * 50)
+    print(f"{'N':>3} {'acertos':>10}")
+    for n, acertos in resumo:
+        print(f"{n:>3} {acertos:>8}/{len(PROBLEMAS)}")
 
 print(
     "\nO que observar:\n"
     "  - A coluna [distribuição] é a parte interessante: quando o modelo\n"
     "    diverge (ex.: 254×3 270×2), você está VENDO o caminho errado que o\n"
     "    N=1 poderia ter escolhido por azar.\n"
-    "  - A ENTRADA quase não cresce com N — o prompt é cobrado uma vez só.\n"
-    "    Quem multiplica é a SAÍDA, que é a tarifa cara.\n"
+    "  - Repare que o PROMPT é o mesmo do script 02. A técnica não está no\n"
+    "    texto — está em pedir várias respostas e comparar. É a primeira vez\n"
+    "    no curso em que a solução não é escrever melhor, e sim MEDIR mais.\n"
     "  - Se o acerto não subiu de N=1 para N=5, a técnica não é para este\n"
     "    caso. Ela só ajuda quando o modelo ERRA POR VARIAÇÃO; se ele erra\n"
     "    sempre igual, votar não conserta nada — cinco execuções erradas\n"
     "    dão uma maioria errada.\n"
-    "  - Decida pelo custo do ERRO, não pelo custo da chamada: 5x é barato\n"
-    "    numa decisão de frete de R$ 10 mil, e caro num chat de FAQ."
+    "  - N maior não é sempre melhor. Comece em 1, e só suba se medir que\n"
+    "    precisa."
 )
