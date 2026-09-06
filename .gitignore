@@ -219,3 +219,6 @@ __marimo__/
 
 # Saída gerada pelos laboratórios
 benchmark.csv
+aula05-agentes/checkpoints/
+aula07-rag/indice/
+aula08-memoria/memoria_db/
