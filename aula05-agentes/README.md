@@ -13,8 +13,13 @@ a orientação inversa da aula 03:
 
 O domínio é o mesmo das aulas anteriores (a transportadora), de propósito:
 trocar de domínio ao mesmo tempo faria você gastar atenção com o problema
-em vez de com a solução. O **exercício 04** usa um domínio diferente —
-prestação de contas — porque lá a arquitetura é escolha sua.
+em vez de com a solução.
+
+**São dois os exercícios desta aula, e só um usa este código.** O de
+projeto (`05-trabalho.md`) pede a arquitetura do **seu** case e não exige
+programar. O prático (`enunciado.md`) pede o `08-analista.py`, num domínio
+novo — prestação de contas. Estes scripts são o meio-termo: cada padrão
+funcionando, isolado, para você ver o que ele cobra antes de escolher.
 
 ## Ordem sugerida
 
