@@ -13,12 +13,21 @@
 # de olhar o resultado.
 #
 # Formalização do padrão: Reflexion (Shinn et al., 2023).
+#
+# O QUE LEVAR DAQUI, depois de rodar:
+#
+#   - o avaliador vago costuma aprovar na primeira rodada. Ele não está
+#     errado: ninguém disse a ele o que era estar bom;
+#   - a qualidade de um avaliador é a qualidade do CRITÉRIO que você
+#     escreveu. O modelo só executa;
+#   - `{"nota": 8}` é inútil. Item a item, com `o_que_corrigir`, é acionável;
+#   - se você não consegue escrever o critério, o avaliador certo é uma pessoa.
 
 import json
 import time
 
-from agente import estruturado, chamar_com_retry, MODELO
-from dados import PEDIDOS, HOJE, custo
+from agente import estruturado, chamar, MODELO
+from dados import PEDIDOS, HOJE
 
 PAUSA = 1.0
 MAX_RODADAS = 3
@@ -89,7 +98,7 @@ Resposta a avaliar:
 def gerar(critica: str | None) -> tuple[str, float]:
     texto_critica = (f"Corrija estes pontos da versão anterior: {critica}"
                      if critica else "")
-    resposta = chamar_com_retry(
+    resposta = chamar(
         model=MODELO, temperature=0.3, max_tokens=350,
         messages=[{"role": "user", "content": PROMPT_GERADOR.format(
             hoje=HOJE, dados=json.dumps(DADOS, ensure_ascii=False),
@@ -97,20 +106,20 @@ def gerar(critica: str | None) -> tuple[str, float]:
     )
     uso = resposta.usage
     return (resposta.choices[0].message.content.strip(),
-            custo(uso.prompt_tokens, uso.completion_tokens))
+            uso.total_tokens)
 
 
 def rodar(rotulo: str, avaliar) -> dict:
     print(f"### {rotulo}\n")
-    critica, gasto, candidato = None, 0.0, ""
+    critica, tokens, candidato = None, 0, ""
     for rodada in range(1, MAX_RODADAS + 1):
         candidato, c = gerar(critica)
-        gasto += c
+        tokens += c
         print(f"  rodada {rodada} · candidato:")
         print(f"    {candidato[:180].replace(chr(10), ' ')}")
 
         aprovado, critica, c = avaliar(candidato)
-        gasto += c
+        tokens += c
         print(f"  rodada {rodada} · avaliação: "
               f"{'APROVADO' if aprovado else 'reprovado'}")
         if critica:
@@ -121,19 +130,19 @@ def rodar(rotulo: str, avaliar) -> dict:
         if aprovado:
             # Saiu por APROVAÇÃO — e o retorno diz isso.
             return {"texto": candidato, "rodadas": rodada,
-                    "saida": "aprovado", "custo": gasto}
+                    "saida": "aprovado", "tokens": tokens}
 
     # Saiu por TETO. Devolver isto como se fosse aprovação é a mentira mais
     # comum deste padrão: uma reprovação honesta vale mais que um "melhor
     # esforço" apresentado como pronto.
     return {"texto": candidato, "rodadas": MAX_RODADAS,
-            "saida": "teto_de_rodadas", "custo": gasto}
+            "saida": "teto_de_rodadas", "tokens": tokens}
 
 
 def avaliador_vago(texto: str):
     r = estruturado(PROMPT_VAGO.format(texto=texto), SCHEMA_VAGO, "aval")
     return r["aprovado"], (None if r["aprovado"] else r["comentario"]), \
-        r["_uso"]["custo"]
+        r["_uso"]["total"]
 
 
 def avaliador_com_criterio(texto: str):
@@ -146,7 +155,7 @@ def avaliador_com_criterio(texto: str):
     reprovados = [k for k, v in itens.items() if not v]
     detalhe = (f"{', '.join(reprovados)} | {r['o_que_corrigir']}"
                if reprovados else None)
-    return aprovado, detalhe, r["_uso"]["custo"]
+    return aprovado, detalhe, r["_uso"]["total"]
 
 
 print(f"Pedido {PEDIDO} · previsão {DADOS['previsao']} · hoje {HOJE}")
@@ -160,15 +169,7 @@ b = rodar("B) avaliador COM CRITÉRIO — cinco itens verificáveis",
 
 print("=" * 78)
 print(f"""
-             rodadas  saída                custo
-vago         {a['rodadas']:>7}  {a['saida']:<18}  R$ {a['custo']:.4f}
-com critério {b['rodadas']:>7}  {b['saida']:<18}  R$ {b['custo']:.4f}
-
-O que levar daqui:
-  - o avaliador vago costuma aprovar na primeira rodada. Ele não está
-    errado: ninguém disse a ele o que era estar bom;
-  - a qualidade de um avaliador é a qualidade do CRITÉRIO que você
-    escreveu. O modelo só executa;
-  - `{{"nota": 8}}` é inútil. Item a item, com `o_que_corrigir`, é acionável;
-  - se você não consegue escrever o critério, o avaliador certo é uma pessoa.
+             rodadas  saída                tokens
+vago         {a['rodadas']:>7}  {a['saida']:<18}  {a['tokens']:>6}
+com critério {b['rodadas']:>7}  {b['saida']:<18}  {b['tokens']:>6}
 """)

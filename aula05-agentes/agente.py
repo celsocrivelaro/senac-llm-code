@@ -24,7 +24,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from openai import OpenAI, RateLimitError, APIConnectionError, APIStatusError
 
-from dados import PEDIDOS, CLIENTES, CHAMADOS, CATEGORIAS, HOJE, custo
+from dados import PEDIDOS, CLIENTES, CHAMADOS, CATEGORIAS, HOJE
 
 load_dotenv()
 
@@ -61,7 +61,7 @@ class PausaParaHumano(Exception):
 
 class Termino(str, Enum):
     RESPONDEU = "respondeu"             # o modelo concluiu
-    ORCAMENTO = "orcamento_esgotado"    # bateu um dos quatro tetos
+    ORCAMENTO = "orcamento_esgotado"    # bateu um dos três tetos
     ERRO_FATAL = "erro_fatal"           # não dá para continuar
     HUMANO = "aguardando_humano"        # precisa de confirmação
     LACO = "laco_detectado"             # girando sem progresso
@@ -87,7 +87,6 @@ class Estado:
     execucao_id: str = field(default_factory=lambda: uuid4().hex[:8])
     passos: list[Passo] = field(default_factory=list)
     tokens_gastos: int = 0
-    custo_estimado: float = 0.0
     ferramentas_ativas: list[str] = field(default_factory=list)
     termino: Termino | None = None
     motivo: str | None = None
@@ -107,11 +106,10 @@ class Estado:
 
 @dataclass
 class Orcamento:
-    """Quatro moedas. `max_passos` sozinho não é orçamento: um passo custa
+    """Três tetos. `max_passos` sozinho não é orçamento: um passo consome
     entre 300 e 40.000 tokens, então 'no máximo 10 passos' não é um limite."""
     max_passos: int = 12
     max_tokens: int = 60_000
-    max_reais: float = 0.50
     max_segundos: float = 120.0
     inicio: float = field(default_factory=time.monotonic)
 
@@ -121,8 +119,6 @@ class Orcamento:
             return f"passos {estado.n_passos}/{self.max_passos}"
         if estado.tokens_gastos >= self.max_tokens:
             return f"tokens {estado.tokens_gastos}/{self.max_tokens}"
-        if estado.custo_estimado >= self.max_reais:
-            return f"custo R$ {estado.custo_estimado:.4f}/{self.max_reais}"
         decorrido = time.monotonic() - self.inicio
         if decorrido >= self.max_segundos:
             return f"tempo {decorrido:.0f}s/{self.max_segundos:.0f}s"
@@ -334,25 +330,100 @@ REANCORAR_A_CADA = 5
 
 # ============================================================ O LAÇO
 
-def chamar_com_retry(**kwargs):
-    """Backoff exponencial (aula 02, nota 01 §8.2).
+# Pistas por código de status. A mensagem crua da API diz o que aconteceu;
+# estas dizem o que FAZER, que é a parte que falta quando o script para.
+PISTAS = {
+    401: "chave inválida ou ausente — confira OPENAI_API_KEY no .env",
+    403: "a chave não tem permissão para este modelo",
+    404: "modelo não encontrado — confira LLM_MODELO no .env",
+    422: "a API recusou o corpo da requisição — olhe `tools` e `response_format`",
+}
 
-    Retry automático é para falha de TRANSPORTE. Falha de CONTEÚDO — um
-    argumento inválido — não se resolve repetindo: quem tenta de novo,
-    com informação nova, é o modelo."""
-    for tentativa in range(5):
-        try:
-            return client.chat.completions.create(**kwargs)
-        except (RateLimitError, APIConnectionError):
-            espera = 2 ** tentativa
-            print(f"      [retry] aguardando {espera}s")
-            time.sleep(espera)
-        except APIStatusError as e:
-            if e.status_code >= 500:
-                time.sleep(2 ** tentativa)
-            else:
-                raise ErroFatal(f"erro {e.status_code} da API: {e}") from e
-    raise ErroFatal("API indisponível após 5 tentativas")
+# O último conjunto de cabeçalhos de limite que o provedor mandou, atualizado
+# a cada chamada. Reagir ao 429 é reagir tarde; a cota restante vem nos
+# cabeçalhos de TODA resposta, e é por isso que `chamar()` usa
+# `with_raw_response` — o `create()` direto devolve só o corpo.
+#
+# Fica VAZIO quando o provedor não manda cabeçalho de cota, e há vários que
+# não mandam. Se este dicionário estiver vazio depois de uma execução, a
+# conclusão não é "sobra cota": é que aqui só dá para reagir ao 429, e o
+# ajuste é a constante PAUSA no topo de cada script.
+LIMITES: dict[str, str] = {}
+
+# Abaixo de quantas unidades restantes o script avisa na tela.
+AVISAR_ABAIXO_DE = 20
+
+
+def _limites(cabecalhos) -> dict[str, str]:
+    """Os cabeçalhos de limite de uso, qualquer que seja o nome deles.
+
+    Os nomes NÃO são padronizados: a OpenAI usa `x-ratelimit-remaining-requests`,
+    a Mistral usa `ratelimitbysize-remaining`, e há provedor que não manda nada.
+    Por isso o filtro é por substring, e não por chave exata — procurar a chave
+    que você conhece é como descobrir que o seu provedor "não tem limite"."""
+    try:
+        itens = cabecalhos.items()
+    except AttributeError:
+        return {}
+    return {k.lower(): v for k, v in itens
+            if "ratelimit" in k.lower().replace("-", "")
+            or k.lower() == "retry-after"}
+
+
+def _restante(limites: dict[str, str]) -> int | None:
+    """O menor valor entre os cabeçalhos de "remaining" — o que acaba primeiro."""
+    valores = [int(v) for k, v in limites.items()
+               if "remaining" in k and v.isdigit()]
+    return min(valores) if valores else None
+
+
+def chamar(**kwargs):
+    """Uma chamada, e só. Se falhar, o script para dizendo por quê.
+
+    Em produção isto teria backoff exponencial (aula 02, nota 01 §8.2). Aqui
+    não tem, de propósito: num laboratório, a falha contornada por três
+    tentativas silenciosas esconde a causa — e a causa quase sempre é
+    configuração, não instabilidade.
+
+    Continua valendo a distinção que o script 05 desenvolve: repetir serve
+    para falha de TRANSPORTE. Falha de CONTEÚDO — um argumento inválido —
+    não se resolve repetindo; quem tenta de novo, com informação nova, é o
+    modelo.
+
+    Usa `with_raw_response` para enxergar os CABEÇALHOS da resposta, e não só
+    o corpo. É lá que vive a cota restante — e olhá-la a cada chamada é o que
+    permite reagir ANTES do 429, em vez de depois."""
+    try:
+        bruta = client.chat.completions.with_raw_response.create(**kwargs)
+    except RateLimitError as e:
+        # O 429 também traz os cabeçalhos, e `retry-after` costuma vir junto:
+        # é o provedor dizendo quanto tempo esperar.
+        restantes = _limites(getattr(e.response, "headers", None))
+        raise ErroFatal(
+            "429 — a API recusou por excesso de requisições. Aumente a "
+            "constante PAUSA no topo do script e rode de novo."
+            + (f" Cabeçalhos de limite: {restantes}." if restantes else
+               " O provedor não mandou cabeçalho de limite nesta resposta.")
+            + f" ({e})") from e
+    except APIConnectionError as e:
+        raise ErroFatal(
+            "não foi possível falar com a API. Verifique a rede e o "
+            f"LLM_BASE_URL do .env. ({e})") from e
+    except APIStatusError as e:
+        pista = PISTAS.get(
+            e.status_code,
+            "erro do servidor da API — o problema não é seu; tente mais tarde"
+            if e.status_code >= 500 else "consulte a documentação da API")
+        raise ErroFatal(f"{e.status_code} — {pista}. ({e})") from e
+
+    LIMITES.clear()
+    LIMITES.update(_limites(bruta.headers))
+
+    restante = _restante(LIMITES)
+    if restante is not None and restante < AVISAR_ABAIXO_DE:
+        print(f"      [limites] restam {restante} — aumente a PAUSA")
+
+    return bruta.parse()
 
 
 def declaracoes(ativas: list[str]) -> list[dict]:
@@ -488,14 +559,13 @@ def rodar(objetivo: str,
                 gancho_contexto(estado)
 
             mensagens = montar_mensagens(estado)
-            resposta = chamar_com_retry(
+            resposta = chamar(
                 model=MODELO, messages=mensagens,
                 tools=declaracoes(estado.ferramentas_ativas),
                 temperature=0,       # escolher ferramenta é decisão: variar é defeito
             )
             uso = resposta.usage
             estado.tokens_gastos += uso.total_tokens
-            estado.custo_estimado += custo(uso.prompt_tokens, uso.completion_tokens)
             estado.contexto_por_passo.append(uso.prompt_tokens)
 
             msg = resposta.choices[0].message
@@ -534,8 +604,7 @@ def rodar(objetivo: str,
 def resumo(estado: Estado) -> str:
     return (f"TERMINO: {estado.termino.value}"
             f"{' (' + estado.motivo + ')' if estado.motivo else ''} | "
-            f"{estado.n_passos} passos | {estado.tokens_gastos} tokens | "
-            f"R$ {estado.custo_estimado:.4f}")
+            f"{estado.n_passos} passos | {estado.tokens_gastos} tokens")
 
 
 def estruturado(prompt: str, schema: dict, nome: str,
@@ -546,7 +615,7 @@ def estruturado(prompt: str, schema: dict, nome: str,
     como devolver uma rota que não existe."""
     mensagens = ([{"role": "system", "content": system}] if system else [])
     mensagens.append({"role": "user", "content": prompt})
-    resposta = chamar_com_retry(
+    resposta = chamar(
         model=MODELO, messages=mensagens, temperature=temperatura,
         response_format={"type": "json_schema",
                          "json_schema": {"name": nome, "schema": schema,
@@ -555,5 +624,5 @@ def estruturado(prompt: str, schema: dict, nome: str,
     uso = resposta.usage
     dados = json.loads(resposta.choices[0].message.content)
     dados["_uso"] = {"entrada": uso.prompt_tokens, "saida": uso.completion_tokens,
-                     "custo": custo(uso.prompt_tokens, uso.completion_tokens)}
+                     "total": uso.total_tokens}
     return dados

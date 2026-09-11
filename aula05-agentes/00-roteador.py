@@ -16,16 +16,47 @@
 #      escolher entre opções que não servem — e escolhe, com confiança.
 #   2. O roteador é SAÍDA ESTRUTURADA com enum (aula 02, nota 02 §7).
 #      Não é uma técnica nova; é a mesma, decidindo o fluxo do programa.
+#
+# O QUE LEVAR DAQUI, depois de rodar:
+#
+#   - a economia não veio de um prompt melhor nem de um modelo melhor.
+#     Veio de decidir o que NÃO mandar para o modelo;
+#   - os itens resolvidos por regra são MAIS confiáveis, não menos:
+#     regra não alucina;
+#   - a rota `nenhuma` pegou a mensagem sem número de pedido. Sem ela, o
+#     modelo teria escolhido alguma coisa — e você não saberia que ele chutou.
 
 import re
 import time
 
 from agente import estruturado
-from dados import MENSAGENS, PEDIDOS, HOJE
+from dados import PEDIDOS, HOJE
 
 PAUSA = 1.0
 
 ROTAS = ["consulta_status", "reclamacao", "fora_de_escopo", "nenhuma"]
+
+# ------------------------------------------------------- o lote de mensagens
+# Fica aqui, e não em `dados.py`, porque só este script o usa — ao contrário
+# de PEDIDOS e HOJE, que os outros scripts compartilham.
+#
+# A mistura é deliberada: a MAIORIA é consulta de status pura, que uma regra
+# resolve sem chamar o modelo. Se você mandar tudo para o LLM, funciona — e
+# chama o modelo dez vezes onde a regra bastaria.
+MENSAGENS = [
+    "Qual o status do pedido 48219?",
+    "onde está meu pedido 31002",
+    "Status 90455 por favor",
+    "quero saber do 55870",
+    "O pedido 48219 está atrasado há duas semanas e ninguém me responde. "
+    "Isso é um absurdo, quero uma solução hoje.",
+    "Consta que o 77310 foi entregue mas eu não recebi nada. "
+    "Falei com o porteiro e ele também não viu.",
+    "A caixa do 55870 chegou rasgada e o produto está trincado",
+    "vocês entregam em Portugal?",
+    "Só queria dizer que a entrega do 31002 foi rapidíssima, parabéns!",
+    "meu pedido não chegou",                      # sem número: falta informação
+]
 
 # --------------------------------------------------------- a rota sem LLM
 # Uma consulta de status é: um número de pedido + uma intenção de consulta,
@@ -89,7 +120,7 @@ print(f"Triagem de {len(MENSAGENS)} mensagens · hoje é {HOJE}\n")
 
 contagem = {"regra": 0, "llm": 0}
 por_rota = {rota: 0 for rota in ROTAS}
-custo_total = 0.0
+tokens_total = 0
 
 for i, mensagem in enumerate(MENSAGENS, 1):
     curta = mensagem.replace("\n", " ")[:58]
@@ -104,7 +135,7 @@ for i, mensagem in enumerate(MENSAGENS, 1):
     resultado = classificar(mensagem)
     contagem["llm"] += 1
     por_rota[resultado["rota"]] += 1
-    custo_total += resultado["_uso"]["custo"]
+    tokens_total += resultado["_uso"]["total"]
     print(f"{i:2}. [ LLM  ] {curta:<60} -> {resultado['rota']}")
     print(f"              {resultado['justificativa'][:70]}")
     time.sleep(PAUSA)
@@ -114,22 +145,13 @@ print("\n" + "=" * 78)
 print(f"resolvidas por REGRA: {contagem['regra']:>2}  "
       f"(zero chamadas de LLM, zero risco de alucinação)")
 print(f"enviadas ao MODELO:   {contagem['llm']:>2}  "
-      f"custo R$ {custo_total:.4f}")
+      f"({tokens_total} tokens)")
 print()
 for rota, n in por_rota.items():
     print(f"  {rota:<18} {'#' * n}{'.' * (len(MENSAGENS) - n)}  {n}")
 
 if contagem["regra"]:
-    projecao = custo_total / contagem["llm"] * len(MENSAGENS)
-    print(f"\nSe TUDO tivesse ido para o modelo: ~R$ {projecao:.4f} "
-          f"({projecao / custo_total:.1f}x o que você pagou)")
-
-print("""
-O que levar daqui:
-  - a economia não veio de um prompt melhor nem de um modelo melhor.
-    Veio de decidir o que NÃO mandar para o modelo;
-  - os itens resolvidos por regra são MAIS confiáveis, não menos:
-    regra não alucina;
-  - a rota `nenhuma` pegou a mensagem sem número de pedido. Sem ela, o
-    modelo teria escolhido alguma coisa — e você não saberia que ele chutou.
-""")
+    projecao = tokens_total / contagem["llm"] * len(MENSAGENS)
+    print(f"\nSe TUDO tivesse ido para o modelo: ~{projecao:.0f} tokens "
+          f"em {len(MENSAGENS)} chamadas "
+          f"({projecao / tokens_total:.1f}x o que esta execução gastou)")

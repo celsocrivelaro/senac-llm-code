@@ -14,7 +14,47 @@
 #
 # SUGESTÃO DE USO EM SALA: rode primeiro só a parte A, com o detector
 # desligado, e peça à turma que preveja quantos passos o agente vai dar.
-# Deixe o contador de tokens e o custo na tela até bater o teto.
+# Deixe o contador de passos e de tokens na tela até bater o teto.
+#
+# O QUE LEVAR DAQUI, depois de rodar:
+#
+#   - compare A e C. Mesmo modelo, mesma ferramenta, mesma tarefa. A única
+#     diferença é o TEXTO do erro:
+#
+#         {"erro": "não encontrado"}
+#
+#         {"erro": "cliente não encontrado",
+#          "esperado": "C seguido de 3 dígitos, ex: C-001",
+#          "recebido": "C-1",
+#          "sugestao": "obtenha o id do cliente em consultar_pedido"}
+#
+#     O segundo responde as três perguntas que o modelo precisa responder
+#     para agir: o que estava errado, qual era o certo, o que fazer agora;
+#
+#   - em A, o diagnóstico que você recebe é "orçamento esgotado" — que é o
+#     diagnóstico ERRADO para o problema certo. `max_passos` limita o dano
+#     do laço; ele não DETECTA o laço;
+#
+#   - em B o detector intervém antes de abortar: injeta a observação e dá
+#     mais uma chance. Só aborta se voltar a repetir;
+#
+#   - em C o detector provavelmente nem disparou. Quando você escreve bons
+#     retornos de erro, a rede de segurança fica sem uso — e é esse o
+#     objetivo;
+#
+#   - e a regra que separa os dois mecanismos de recuperação:
+#
+#         repetir a chamada ->  falha de TRANSPORTE (429, 500, timeout)
+#         volta ao modelo   ->  falha de CONTEÚDO   (argumento inválido)
+#
+#     repetir uma chamada determinística com os mesmos argumentos é
+#     repetição sem informação nova: uma forma lenta de falhar.
+#
+#     A primeira linha vale para sistemas em produção. O `chamar()` do
+#     `agente.py` NÃO a implementa: ele falha na primeira recusa e explica o
+#     motivo. É decisão de laboratório, não esquecimento — a falha
+#     contornada em silêncio esconde a causa, e aqui a causa quase sempre é
+#     o `.env`, não instabilidade da API.
 
 import agente
 from agente import Orcamento, ErroRecuperavel, rodar, resumo
@@ -43,8 +83,7 @@ def rodar_condicao(rotulo, ferramenta, com_detector, max_passos):
     agente.FERRAMENTAS["consultar_cliente"] = ferramenta
     try:
         estado = rodar(OBJETIVO,
-                       orcamento=Orcamento(max_passos=max_passos,
-                                           max_reais=0.10),
+                       orcamento=Orcamento(max_passos=max_passos),
                        fase="analise", com_detector=com_detector,
                        limite_laco=3)
     finally:
@@ -78,44 +117,10 @@ c = rodar_condicao(
     original, com_detector=True, max_passos=10)
 
 print(f"\n{LINHA}")
-print(f"{'condição':<34} {'término':<22} {'passos':>7} {'tokens':>8} {'custo':>10}")
+print(f"{'condição':<34} {'término':<22} {'passos':>7} {'tokens':>8}")
 for nome, e in [("A erro inútil, sem detector", a),
                 ("B erro inútil, com detector", b),
                 ("C erro que ensina", c)]:
     print(f"{nome:<34} {e.termino.value:<22} {e.n_passos:>7} "
-          f"{e.tokens_gastos:>8} R$ {e.custo_estimado:>7.4f}")
+          f"{e.tokens_gastos:>8}")
 
-print(f"""
-O que levar daqui:
-
-  - compare A e C. Mesmo modelo, mesma ferramenta, mesma tarefa. A única
-    diferença é o TEXTO do erro:
-
-        {{"erro": "não encontrado"}}
-
-        {{"erro": "cliente não encontrado",
-         "esperado": "C seguido de 3 dígitos, ex: C-001",
-         "recebido": "C-1",
-         "sugestao": "obtenha o id do cliente em consultar_pedido"}}
-
-    O segundo responde as três perguntas que o modelo precisa responder para
-    agir: o que estava errado, qual era o certo, o que fazer agora;
-
-  - em A, o diagnóstico que você recebe é "orçamento esgotado" — que é o
-    diagnóstico ERRADO para o problema certo. `max_passos` limita o dano do
-    laço; ele não DETECTA o laço;
-
-  - em B o detector intervém antes de abortar: injeta a observação e dá mais
-    uma chance. Só aborta se voltar a repetir;
-
-  - em C o detector provavelmente nem disparou. Quando você escreve bons
-    retornos de erro, a rede de segurança fica sem uso — e é esse o objetivo.
-
-  - e a regra que separa os dois mecanismos de recuperação:
-
-        retry automático  ->  falha de TRANSPORTE (429, 500, timeout)
-        volta ao modelo   ->  falha de CONTEÚDO   (argumento inválido)
-
-    repetir uma chamada determinística com os mesmos argumentos é retry sem
-    informação nova: uma forma lenta de falhar.
-""")

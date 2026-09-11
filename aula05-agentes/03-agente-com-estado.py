@@ -32,7 +32,7 @@ print("(repare: `abrir_chamado` NÃO está declarada — restrição por "
 
 estado = rodar(PERGUNTA,
                orcamento=Orcamento(max_passos=8, max_tokens=20_000,
-                                   max_reais=0.05, max_segundos=90),
+                                   max_segundos=90),
                fase="analise")
 
 print("\n" + "=" * 78)
@@ -44,7 +44,6 @@ print("\n" + "=" * 78)
 print("O QUE O ESTADO RESPONDE (e `mensagens[]` não responderia):\n")
 print(f"  quantos passos?          {estado.n_passos}")
 print(f"  quantos tokens?          {estado.tokens_gastos}")
-print(f"  quanto custou?           R$ {estado.custo_estimado:.4f}")
 print(f"  qual era o objetivo?     {estado.objetivo[:50]}...")
 print(f"  alguma ferramenta falhou? "
       f"{[p.ferramenta for p in estado.passos if p.erro] or 'nenhuma'}")
