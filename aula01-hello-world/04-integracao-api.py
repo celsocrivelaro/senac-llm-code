@@ -10,11 +10,14 @@ import requests
 # Carrega as variáveis do arquivo .env
 load_dotenv()
 
-# Initialize the client targeting Mistral's API endpoint
+# O cliente lê as três variáveis do .env, e são as mesmas em todas as
+# aulas: a chave, o endereço da API e o nome do modelo. Trocar de
+# provedor (Mistral, Ollama, outro) é trocar o .env — não o código.
 client = OpenAI(
-    base_url="https://api.mistral.ai/v1",
-    api_key=os.environ.get("OPENAI_API_KEY")
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
+    api_key=os.environ.get("OPENAI_API_KEY"),
 )
+MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 
 POKEAPI = "https://pokeapi.co/api/v2/pokemon/"
 
@@ -107,7 +110,7 @@ messages.append({"role": "user", "content": pergunta})
 # até ele ter dados suficientes para responder. O limite de passos evita loop infinito.
 for passo in range(8):
     response = client.chat.completions.create(
-        model="mistral-small-latest",
+        model=MODELO,
         messages=messages,
         tools=TOOLS,
     )
