@@ -1,5 +1,15 @@
 # Aula 05 — Arquitetura de agentes
-# Módulo compartilhado: o OBJETO DE ESTADO, o orçamento e o laço.
+# O AGENTE: o objeto de estado, o orçamento, as ferramentas e o laço.
+#
+# Compartilhado pelos scripts 03, 04, 05 e 06 — e só por eles. Os scripts 00,
+# 01 e 02 não importam nada daqui: eles demonstram WORKFLOWS, e cada um se
+# explica sozinho no próprio arquivo.
+#
+# A razão de estes quatro dividirem um módulo é oposta: eles não são quatro
+# demonstrações, são O MESMO AGENTE visto quatro vezes. O 03 apresenta o
+# estado, o 04 as formas de terminar, o 05 os erros, o 06 a compressão. A
+# pergunta que o aluno faz em cada um é "o que mudou desde o anterior?" — e
+# ela só tem resposta se o que NÃO mudou estiver num lugar só.
 #
 # Este arquivo é a nota 02 desta aula virando código. A ideia única:
 #
@@ -189,20 +199,12 @@ def abrir_chamado(pedido: str, categoria: str, descricao: str,
     return chamado
 
 
-def consultar_chamado(protocolo: str) -> dict:
-    for chamado in CHAMADOS.values():
-        if chamado["protocolo"] == protocolo:
-            return chamado
-    raise ErroRecuperavel("chamado não encontrado", recebido=protocolo)
-
-
 FERRAMENTAS = {
     "consultar_pedido": consultar_pedido,
     "listar_pedidos": listar_pedidos,
     "consultar_cliente": consultar_cliente,
     "calcular_prazo": calcular_prazo,
     "abrir_chamado": abrir_chamado,
-    "consultar_chamado": consultar_chamado,
 }
 
 ESCRITA = {"abrir_chamado"}          # exigem idempotência e, se irreversível,
@@ -291,19 +293,6 @@ DECLARACOES = {
             },
         },
     },
-    "consultar_chamado": {
-        "type": "function",
-        "function": {
-            "name": "consultar_chamado",
-            "description": ("Lê um chamado pelo protocolo. Use para confirmar "
-                            "o que você acabou de gravar."),
-            "parameters": {
-                "type": "object",
-                "properties": {"protocolo": {"type": "string"}},
-                "required": ["protocolo"], "additionalProperties": False,
-            },
-        },
-    },
 }
 
 # Ferramentas por fase (nota 02, §6). Na fase de análise, `abrir_chamado`
@@ -313,7 +302,6 @@ DECLARACOES = {
 FASES = {
     "analise": ["consultar_pedido", "listar_pedidos", "consultar_cliente",
                 "calcular_prazo"],
-    "registro": ["abrir_chamado", "consultar_chamado"],
     "tudo": list(FERRAMENTAS),
 }
 
@@ -605,24 +593,3 @@ def resumo(estado: Estado) -> str:
     return (f"TERMINO: {estado.termino.value}"
             f"{' (' + estado.motivo + ')' if estado.motivo else ''} | "
             f"{estado.n_passos} passos | {estado.tokens_gastos} tokens")
-
-
-def estruturado(prompt: str, schema: dict, nome: str,
-                system: str | None = None, temperatura: float = 0) -> dict:
-    """Saída estruturada com decodificação restrita (aula 02, nota 02 §7).
-
-    É o mecanismo por trás do roteador: `enum` no schema = o modelo não tem
-    como devolver uma rota que não existe."""
-    mensagens = ([{"role": "system", "content": system}] if system else [])
-    mensagens.append({"role": "user", "content": prompt})
-    resposta = chamar(
-        model=MODELO, messages=mensagens, temperature=temperatura,
-        response_format={"type": "json_schema",
-                         "json_schema": {"name": nome, "schema": schema,
-                                         "strict": True}},
-    )
-    uso = resposta.usage
-    dados = json.loads(resposta.choices[0].message.content)
-    dados["_uso"] = {"entrada": uso.prompt_tokens, "saida": uso.completion_tokens,
-                     "total": uso.total_tokens}
-    return dados

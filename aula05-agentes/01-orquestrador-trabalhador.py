@@ -22,12 +22,46 @@
 #     e não no agente, porque este é o primeiro padrão com autonomia real.
 
 import json
+import os
 import time
 
-from agente import estruturado, chamar, MODELO
-from dados import PEDIDOS, CLIENTES, HOJE
+from dotenv import load_dotenv
+from openai import OpenAI
+
+from dados import PEDIDOS, HOJE
+
+load_dotenv()
+
+client = OpenAI(
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
+MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 
 PAUSA = 1.0
+
+
+def estruturado(prompt: str, schema: dict, nome: str,
+                system: str | None = None, temperatura: float = 0) -> dict:
+    """Saída estruturada com decodificação restrita (aula 02, nota 02 §7).
+
+    Aqui ela carrega o PLANO do orquestrador: o schema garante que venha uma
+    lista de subtarefas, e não prosa descrevendo subtarefas."""
+    mensagens = ([{"role": "system", "content": system}] if system else [])
+    mensagens.append({"role": "user", "content": prompt})
+    resposta = client.chat.completions.create(
+        model=MODELO, messages=mensagens, temperature=temperatura,
+        response_format={"type": "json_schema",
+                         "json_schema": {"name": nome, "schema": schema,
+                                         "strict": True}},
+    )
+    uso = resposta.usage
+    dados = json.loads(resposta.choices[0].message.content)
+    dados["_uso"] = {"entrada": uso.prompt_tokens, "saida": uso.completion_tokens,
+                     "total": uso.total_tokens}
+    return dados
+
+
 MAX_SUBTAREFAS = 5          # o teto. Um orquestrador sem teto é uma conta
                             # aberta assinada por um modelo.
 
@@ -48,7 +82,7 @@ def rodar_sectioning() -> dict:
     print("A) SECTIONING — as seções estão no código\n")
     resultados, tokens = {}, 0
     for nome, instrucao in SECOES:
-        resposta = chamar(
+        resposta = client.chat.completions.create(
             model=MODELO, temperature=0, max_tokens=300,
             messages=[{"role": "user", "content":
                        f"Hoje é {HOJE}.\n{instrucao}\n\n"
@@ -126,7 +160,7 @@ def rodar_orquestrador() -> dict:
 
     resultados = {}
     for s in subtarefas:                       # os TRABALHADORES
-        resposta = chamar(
+        resposta = client.chat.completions.create(
             model=MODELO, temperature=0, max_tokens=300,
             messages=[{"role": "user", "content":
                        f"Hoje é {HOJE}.\n{s['instrucao']}\n\n"
@@ -137,7 +171,7 @@ def rodar_orquestrador() -> dict:
         resultados[s["nome"]] = resposta.choices[0].message.content.strip()
         time.sleep(PAUSA)
 
-    sintese = chamar(                # o SINTETIZADOR
+    sintese = client.chat.completions.create(      # o SINTETIZADOR
         model=MODELO, temperature=0, max_tokens=400,
         messages=[{"role": "user", "content":
                    "Escreva um parecer curto da carteira a partir destas "

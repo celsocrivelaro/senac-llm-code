@@ -26,7 +26,7 @@
 #   - a linha "silêncio" da tabela de falhas da aula 01 morre aqui.
 
 import agente
-from agente import Orcamento, Termino, ErroFatal, rodar, resumo
+from agente import Orcamento, ErroFatal, rodar, resumo
 
 LINHA = "=" * 78
 

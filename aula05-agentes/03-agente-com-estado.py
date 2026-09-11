@@ -17,9 +17,8 @@
 # que a lista de mensagens não responde.
 
 import json
-from dataclasses import asdict
 
-from agente import Estado, Orcamento, rodar, resumo, FASES
+from agente import Orcamento, rodar, resumo, FASES
 from dados import HOJE
 
 PERGUNTA = ("O cliente diz que o pedido 48219 não chegou. "

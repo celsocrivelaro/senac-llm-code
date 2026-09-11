@@ -24,12 +24,46 @@
 #   - se você não consegue escrever o critério, o avaliador certo é uma pessoa.
 
 import json
+import os
 import time
 
-from agente import estruturado, chamar, MODELO
+from dotenv import load_dotenv
+from openai import OpenAI
+
 from dados import PEDIDOS, HOJE
 
+load_dotenv()
+
+client = OpenAI(
+    base_url=os.environ.get("LLM_BASE_URL", "https://api.mistral.ai/v1"),
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
+MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
+
 PAUSA = 1.0
+
+
+def estruturado(prompt: str, schema: dict, nome: str,
+                system: str | None = None, temperatura: float = 0) -> dict:
+    """Saída estruturada com decodificação restrita (aula 02, nota 02 §7).
+
+    Aqui ela carrega o VEREDITO do avaliador: um booleano por item do
+    critério, e não uma nota de 0 a 10 que ninguém sabe interpretar."""
+    mensagens = ([{"role": "system", "content": system}] if system else [])
+    mensagens.append({"role": "user", "content": prompt})
+    resposta = client.chat.completions.create(
+        model=MODELO, messages=mensagens, temperature=temperatura,
+        response_format={"type": "json_schema",
+                         "json_schema": {"name": nome, "schema": schema,
+                                         "strict": True}},
+    )
+    uso = resposta.usage
+    dados = json.loads(resposta.choices[0].message.content)
+    dados["_uso"] = {"entrada": uso.prompt_tokens, "saida": uso.completion_tokens,
+                     "total": uso.total_tokens}
+    return dados
+
+
 MAX_RODADAS = 3
 
 PEDIDO = "48219"
@@ -98,7 +132,7 @@ Resposta a avaliar:
 def gerar(critica: str | None) -> tuple[str, float]:
     texto_critica = (f"Corrija estes pontos da versão anterior: {critica}"
                      if critica else "")
-    resposta = chamar(
+    resposta = client.chat.completions.create(
         model=MODELO, temperature=0.3, max_tokens=350,
         messages=[{"role": "user", "content": PROMPT_GERADOR.format(
             hoje=HOJE, dados=json.dumps(DADOS, ensure_ascii=False),
