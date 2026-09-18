@@ -1,4 +1,4 @@
-# Aula 06 — 03: CHUNKING, medido.
+# Aula 06 — 02: CHUNKING, medido.
 #
 # Três estratégias sobre o MESMO regulamento e as MESMAS dez perguntas. A
 # afirmação "em documento normativo, estrutura ganha" não é para ser aceita:
@@ -6,11 +6,22 @@
 #
 # O conjunto de dez perguntas com resposta conhecida (definido abaixo) é o
 # primeiro dataset de avaliação do curso. A aula 11 volta nele com outro nome.
+#
+# Rode com um número para mudar o k:  python 02-chunking.py 1
 
 import sys
 
-from busca import Indice, por_estrutura, resumo_consumo
+import numpy as np
+
+from indice_memoria import IndiceMemoria
 from dados import REGULAMENTO
+from embedding import gerar_matrix_embbeddings
+from estrategias_chunking import ESTRATEGIAS
+
+# Quantos trechos a busca devolve. Passe outro na linha de comando para ver o
+# efeito: `python 02-chunking.py 1` mostra o que se perde apostando no
+# primeiro colocado.
+K = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
 
 # ============================================================ AS PERGUNTAS
@@ -44,44 +55,14 @@ PERGUNTAS = [
      "artigo": "Art. 8º §2º"},
 ]
 
-# ------------------------------------------------ as duas outras estratégias
-#
-# Elas moram aqui, e não no módulo compartilhado, porque este é o único
-# script que as executa: existem para PERDER a comparação abaixo. O corte
-# que ganha — `por_estrutura` — é o único que segue para o 04 e para a
-# aula 07, e por isso é o único que vive em `busca.py`.
-
-
-def por_caracteres(texto: str, tamanho: int = 400) -> list[dict]:
-    """Cortar a cada N caracteres. A mais simples, e a que ignora
-    completamente a estrutura que o autor do documento escreveu."""
-    limpo = texto.strip()
-    return [{"id": f"c{i//tamanho}", "texto": limpo[i:i + tamanho]}
-            for i in range(0, len(limpo), tamanho)]
-
-
-def por_caracteres_sobrepostos(texto: str, tamanho: int = 400,
-                               sobreposicao: int = 100) -> list[dict]:
-    """Cortar a cada N caracteres, com sobreposição.
-
-    A sobreposição existe para que uma frase partida ao meio apareça inteira
-    em pelo menos um dos chunks. Custa espaço no índice: o mesmo texto é
-    embutido mais de uma vez.
-    """
-    limpo = texto.strip()
-    passo = tamanho - sobreposicao
-    return [{"id": f"s{i//passo}", "texto": limpo[i:i + tamanho]}
-            for i in range(0, len(limpo), passo)]
-
-
-ESTRATEGIAS = {
-    "caracteres": lambda t: por_caracteres(t, 400),
-    "sobreposto": lambda t: por_caracteres_sobrepostos(t, 400, 100),
-    "estrutura": por_estrutura,
-}
-
 
 # ------------------------------------------------------------------ a medida
+
+def _normalizar(s: str) -> str:
+    return (s.replace("º", "").replace("o.", "").replace(".", "")
+             .replace(" ", "").lower())
+
+
 
 def acertou(chunks: list[dict], artigo_esperado: str) -> bool:
     """O chunk recuperado contém o artigo que responde a pergunta?
@@ -94,17 +75,17 @@ def acertou(chunks: list[dict], artigo_esperado: str) -> bool:
                for c in chunks)
 
 
-def _normalizar(s: str) -> str:
-    return (s.replace("º", "").replace("o.", "").replace(".", "")
-             .replace(" ", "").lower())
-
-
-def recall_at_k(indice: Indice, perguntas: list[dict], k: int = 3) -> dict:
+def recall_at_k(indice: IndiceMemoria, perguntas: list[dict],
+                vetores: np.ndarray, k: int = 3) -> dict:
     """recall@k: em quantas perguntas o trecho certo apareceu entre os k
-    primeiros. Devolve também as falhas, que valem mais que a média."""
+    primeiros. Devolve também as falhas, que valem mais que a média.
+
+    Recebe os VETORES das perguntas prontos, e por isso não chama a API
+    nenhuma vez. Ver o comentário de VETORES_PERGUNTA, abaixo.
+    """
     acertos, falhas = 0, []
-    for caso in perguntas:
-        recuperados = indice.buscar(caso["pergunta"], k=k)
+    for caso, vetor in zip(perguntas, vetores):
+        recuperados = indice.buscar_vetor(vetor, k=k)
         if acertou(recuperados, caso["artigo"]):
             acertos += 1
         else:
@@ -113,8 +94,6 @@ def recall_at_k(indice: Indice, perguntas: list[dict], k: int = 3) -> dict:
     return {"k": k, "acertos": acertos, "total": len(perguntas),
             "recall": acertos / len(perguntas), "falhas": falhas}
 
-
-K = int(sys.argv[1]) if len(sys.argv) > 1 else 3
 
 print("=" * 74)
 print(f"CHUNKING — três estratégias, {len(PERGUNTAS)} perguntas, recall@{K}")
@@ -136,10 +115,22 @@ print("A MEDIDA")
 print("=" * 74)
 print()
 
-relatorios = {}
+# As dez perguntas são embutidas UMA VEZ. O vetor de uma pergunta não muda
+# entre estratégias nem entre valores de k, e este script a consulta SETE
+# vezes: três para comparar os cortes, quatro para varrer o k.
+#
+# Reembuti-las a cada medição custaria 70 chamadas idênticas — e seria este
+# script violando a lição que o 03 ensina: indexar uma vez, consultar sempre.
+# Com os vetores prontos, a aula inteira cabe em 4 chamadas.
+VETORES_PERGUNTA = gerar_matrix_embbeddings([c["pergunta"] for c in PERGUNTAS])
+
+# Os índices ficam guardados: construir um custa uma chamada, e a varredura
+# do k mais abaixo reusa o da estratégia vencedora.
+indices, relatorios = {}, {}
 for nome, estrategia in ESTRATEGIAS.items():
-    indice = Indice(estrategia(REGULAMENTO))
-    relatorio = recall_at_k(indice, PERGUNTAS, k=K)
+    indice = IndiceMemoria(estrategia(REGULAMENTO))
+    indices[nome] = indice
+    relatorio = recall_at_k(indice, PERGUNTAS, VETORES_PERGUNTA, k=K)
     relatorios[nome] = relatorio
     barra = "█" * int(relatorio["recall"] * 40)
     print(f"  {nome:<12s} {len(indice):>3d} chunks   "
@@ -155,9 +146,10 @@ print("AS PERGUNTAS QUE FALHARAM")
 print("=" * 74)
 print("""
 O recall médio esconde o caso difícil. As falhas abaixo valem mais que a
-média, porque cada uma tem um diagnóstico diferente: é cegueira do vetor
-(script 02), é o corte que separou a pergunta da resposta, ou é a pergunta
-que está mal formulada?
+média, porque cada uma tem um diagnóstico diferente: é o corte que separou
+a pergunta da resposta, é a pergunta que está mal formulada, ou é o vetor
+que não representa o que a pergunta exige — e este último caso é assunto
+da aula 07.
 """)
 
 for nome, relatorio in relatorios.items():
@@ -180,9 +172,6 @@ chunk recuperado ocupa a janela em toda pergunta. Escolher k é decisão de
 projeto, não detalhe.
 """)
 
-indice_melhor = Indice(ESTRATEGIAS[melhor](REGULAMENTO))
 for k in (1, 3, 5, 10):
-    r = recall_at_k(indice_melhor, PERGUNTAS, k=k)
+    r = recall_at_k(indices[melhor], PERGUNTAS, VETORES_PERGUNTA, k=k)
     print(f"  k={k:<3d} recall = {r['acertos']}/{r['total']} ({r['recall']:.0%})")
-
-print(f"\n{resumo_consumo('TOTAL DO SCRIPT')}")

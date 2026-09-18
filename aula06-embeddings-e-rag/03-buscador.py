@@ -1,9 +1,9 @@
-# Aula 06 — 04: O BUSCADOR.
+# Aula 06 — 03: O BUSCADOR.
 #
 # O artefato que a aula entrega: o buscador executável, com o corte que
-# venceu a medição do script 03.
+# venceu a medição do script 02.
 #
-#     python 04-buscador.py "qual o teto de refeição em viagem?"
+#     python 03-buscador.py "qual o teto de refeição em viagem?"
 #
 # Repare no que este script NÃO faz: não responde nada. Devolve trechos. A
 # geração sobre os trechos recuperados é o assunto da aula 07, e a fronteira
@@ -11,58 +11,50 @@
 
 import sys
 
-from busca import CONSUMO, Indice, por_estrutura, resumo_consumo
+from indice_memoria import IndiceMemoria
 from dados import REGULAMENTO
+from estrategias_chunking import por_estrutura
 
-# A estratégia vencedora do script 03. O nome é CONSTANTE, e não um detalhe
+# A estratégia vencedora do script 02. O nome é CONSTANTE, e não um detalhe
 # escondido na chamada: trocar o corte muda o recall, e por isso ele entra no
 # carimbo da versão junto com o prompt e o modelo (aula 03, nota 03).
 #
-# É também o motivo de só `por_estrutura` viver em `busca.py`: as outras duas
-# estratégias ficaram no 03, onde servem de comparação e nada mais.
+# Das três do `estrategias_chunking.py`, só esta chega aqui. As outras duas
+# existem para perder a medição do 02, e é lá que elas são executadas.
 ESTRATEGIA = "estrutura"
 K_PADRAO = 3
-
-
-def construir_indice() -> Indice:
-    """Constrói o índice do regulamento, cortado por artigo e parágrafo."""
-    return Indice(por_estrutura(REGULAMENTO))
-
-
-def buscar(pergunta: str, k: int = K_PADRAO, indice: Indice | None = None):
-    return (indice or construir_indice()).buscar(pergunta, k=k)
 
 
 if __name__ == "__main__":
     pergunta = " ".join(sys.argv[1:]) or "qual o teto de refeição em viagem?"
 
-    # O índice é construído UMA VEZ. Guardamos o consumo antes e depois para
-    # medir a assimetria no fim — ela é a propriedade que faz a busca vetorial
-    # valer a pena, e só dá para vê-la onde existe um índice.
-    antes = dict(CONSUMO)
-    indice = construir_indice()
-    gasto_indice = {k: CONSUMO[k] - antes[k] for k in CONSUMO}
+    # O índice é construído UMA VEZ, aqui, e a busca logo abaixo o RECEBE
+    # pronto. Não há atalho que o reconstrua sob demanda: seria a assimetria
+    # do fim deste script ao contrário, e o aluno copiaria o atalho.
+    indice = IndiceMemoria(por_estrutura(REGULAMENTO))
 
     print("=" * 74)
     print(f"BUSCADOR — estratégia={ESTRATEGIA} · {len(indice)} chunks · k={K_PADRAO}")
     print("=" * 74)
     print(f"\npergunta: {pergunta!r}\n")
 
-    antes_busca = dict(CONSUMO)
-    for posicao, chunk in enumerate(buscar(pergunta, indice=indice), start=1):
+    for posicao, chunk in enumerate(indice.buscar(pergunta, k=K_PADRAO), start=1):
         print(f"  {posicao}. [{chunk['id']}] score {chunk['score']:.4f}")
         for linha in chunk["texto"].strip().split("\n"):
             print(f"       {linha}")
         print()
-    gasto_busca = {k: CONSUMO[k] - antes_busca[k] for k in CONSUMO}
 
     # ------------------------------------------------------------ a assimetria
+    #
+    # Os números abaixo não são medidos: são lidos do próprio desenho do
+    # código. `construir_indice()` embute os chunks em UMA chamada, e roda uma
+    # vez; `buscar()` embute a pergunta em UMA chamada, e roda a cada pergunta.
     print("=" * 74)
     print("A ASSIMETRIA: O ÍNDICE UMA VEZ, A PERGUNTA SEMPRE")
     print("=" * 74)
     print(f"""
-  construir o índice ... {gasto_indice['chamadas']} chamada(s) · {gasto_indice['tokens']} tokens · {len(indice)} chunks
-  esta consulta ........ {gasto_busca['chamadas']} chamada   · {gasto_busca['tokens']} tokens
+  construir o índice ... 1 chamada, com os {len(indice)} chunks juntos   UMA VEZ
+  esta consulta ........ 1 chamada, só com a pergunta        A CADA PERGUNTA
 
 A segunda linha é o que se paga em TODA pergunta. A primeira acontece uma
 vez, e a próxima consulta não vai tocar no índice de novo — ele está pronto.
@@ -86,5 +78,3 @@ responde — sabe apenas quais são os mais parecidos.
 Transformar isso em resposta é a aula 07, e o primeiro problema de lá já
 está visível acima: se três trechos voltam e dois são irrelevantes, o
 modelo vai citar algum deles.""")
-
-    print(f"\n{resumo_consumo('TOTAL DO SCRIPT')}")

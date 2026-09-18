@@ -1,10 +1,10 @@
-# Aula 06 — Embeddings e busca semântica
+# Aula 06 — Embeddings e RAG
 # O CORPUS da aula, e só ele.
 #
-# Está aqui porque três scripts o usam — o 00 o mede, o 03 o corta de três
-# formas e o 04 o indexa. O resto dos dados mora no script que o consome:
-# os pares de cegueira no 02, o trio de relevância no 01, as dez perguntas
-# com resposta conhecida no 03.
+# Está aqui porque dois scripts o usam — o 02 o corta de três formas e o 03
+# o indexa. O resto dos dados mora no script que o consome: o trio de
+# relevância no 01, as dez perguntas com resposta conhecida no 02, os
+# exemplares de rota no 04 e as três perguntas do RAG no 05.
 #
 # O domínio é a PRESTAÇÃO DE CONTAS, o mesmo do exercício da aula 05. Nas
 # aulas 01-05 o conhecimento do agente vinha de um dict escrito à mão; aqui
