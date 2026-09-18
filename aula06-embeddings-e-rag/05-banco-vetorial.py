@@ -2,29 +2,24 @@
 #
 # Os scripts 02 e 03 guardaram os vetores numa matriz de numpy. Funciona, e
 # a aula defendeu essa escolha com número. Este script troca a matriz por um
-# BANCO DE VETORES e mostra as quatro coisas que se precisa saber sobre um:
+# BANCO DE VETORES e mostra as três coisas que se precisa saber sobre um:
 #
-#   1. como ele funciona por dentro, e por que a busca não é exaustiva;
-#   2. quanto tempo ele leva — medido, não afirmado;
-#   3. como se INSERE (id, documento, metadado, vetor);
-#   4. como se BUSCA, em quatro situações diferentes;
-#   5. como se LÊ o que volta.
+#   1. como se INSERE (id, documento, metadado, vetor);
+#   2. como se BUSCA, em quatro situações diferentes;
+#   3. como se LÊ o que volta.
 #
 # O banco aqui é o Chroma, escolhido por ser o mais simples: roda embutido,
 # num diretório local, sem serviço para subir. O que se aprende aqui vale
 # para Pinecone, Weaviate, Qdrant e Milvus — a API muda, o modelo não.
 
 import shutil
-import time
 from pathlib import Path
 
 import chromadb
-import numpy as np
 
 from dados import REGULAMENTO
 from embedding import gerar_matrix_embbeddings, gerar_vetor_embeddings
 from estrategias_chunking import por_estrutura
-from similaridade import cosseno_lote
 
 BANCO = Path(__file__).parent / "indice-demo"
 
@@ -156,53 +151,3 @@ mediu entre textos sem relação nenhuma.
 
 Quem decide se o mais próximo é próximo o bastante é o seu código — e é o
 portão do script 06.""")
-
-# ============================================================ QUAIS TEMPOS
-print("\n" + "=" * 74)
-print("4. QUAIS TEMPOS")
-print("=" * 74)
-
-REPETICOES = 200
-v = v_pergunta
-
-t0 = time.perf_counter()
-for _ in range(REPETICOES):
-    scores = cosseno_lote(v, vetores)
-    _ = np.argsort(-scores)[:3]
-t_numpy = (time.perf_counter() - t0) / REPETICOES * 1000
-
-t0 = time.perf_counter()
-for _ in range(REPETICOES):
-    colecao.query(query_embeddings=[v.tolist()], n_results=3)
-t_chroma = (time.perf_counter() - t0) / REPETICOES * 1000
-
-print(f"""
-Mesma pergunta, mesmos {len(chunks)} chunks, {REPETICOES} repetições, sem contar a
-chamada de API:
-
-  numpy, comparando com TODOS ..... {t_numpy:7.3f} ms
-  Chroma .......................... {t_chroma:7.3f} ms
-
-Com {len(chunks)} vetores, o banco não ganha nada — e pode até perder, porque paga
-overhead de serialização para economizar comparações que custam quase nada.
-
-O ganho está na ESCALA, e vem de não comparar com todos:
-
-  busca exaustiva       compara com os n vetores        O(n)
-  busca aproximada      navega um grafo de vizinhos     ~O(log n)
-
-O algoritmo que o Chroma usa é o HNSW — um grafo de várias camadas, com
-ligações longas em cima e vizinhança densa embaixo, percorrido de cima para
-baixo. É "aproximado" num sentido preciso: ele pode não devolver o vizinho
-mais próximo de verdade. Em troca, atende milhões de vetores em
-milissegundos.
-
-  n = 28          exaustivo é instantâneo       o banco é desnecessário
-  n = 100 mil     exaustivo ainda é viável      o banco começa a compensar
-  n = 10 milhões  exaustivo é inviável          o banco é obrigatório
-
-    A PERGUNTA NÃO É "BANCO OU NUMPY". É QUANTOS VETORES VOCÊ TEM.
-
-E, nesta aula, o argumento para usar um banco NÃO é velocidade: é
-PERSISTÊNCIA. O índice em numpy morre com o processo, e reconstruí-lo custa
-uma chamada de embedding sobre o corpus inteiro, toda vez.""")

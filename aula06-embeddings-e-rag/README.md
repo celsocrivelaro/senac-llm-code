@@ -29,7 +29,7 @@ local, `indice/`, criado em tempo de execução e não versionado.
 | `02-chunking.py` | Três estratégias de corte sobre o mesmo regulamento e as mesmas dez perguntas, com `recall@k` comparado — e as perguntas que falharam, que valem mais que a média. |
 | `03-buscador.py` | O buscador completo, executável e importável, com o corte que venceu o `02`. Imprime a assimetria: construir o índice acontece uma vez, consultar acontece sempre. |
 | `04-router.py` | O router por embedding que a Aula 05 nomeou e não implementou. Classificar é buscar com outro índice — e duas mensagens que diferem em uma palavra caem na mesma rota, sem nenhum modelo gerar texto. |
-| `05-banco-vetorial.py` | O banco de vetores por dentro: as três funções, ANN, inserção, quatro situações de busca e a leitura do retorno — mais a medição que mostra o banco **perdendo** para o numpy em 28 vetores. |
+| `05-banco-vetorial.py` | O banco de vetores por dentro: inserção, quatro situações de busca e a leitura do retorno — inclusive a pergunta fora do domínio, que volta com distância quase igual à da pertinente. |
 | `06-rag-simples.py` | O RAG mínimo: o índice sai da memória e vai para um banco de vetores, e os trechos viram resposta. A primeira chamada de geração da aula — e o portão que deveria barrar a pergunta fora de domínio, mas não barra, porque o limiar foi chutado. |
 
 Cada script importa o que precisa dos módulos, e nada além disso. O `00`, o
@@ -79,10 +79,6 @@ baixo é bom.
 
 `geracao.py` — **a metade que faltava.** Uma chamada, um prompt, texto de
 volta. O contrato de saída e a citação conferível são da aula 07.
-
-`rag_simples.py` — **as quatro etapas encaixadas**, com o portão entre a
-busca e a geração. Pela taxonomia da aula 05 isto é *prompt chaining* com
-portão, e não um agente.
 
 `dados.py` — **o corpus**: o regulamento de despesas em texto corrido. Só o
 `02`, o `03` e o `05` o usam. Todo o resto mora no script que o consome — o
