@@ -12,7 +12,6 @@
 # num diretório local, sem serviço para subir. O que se aprende aqui vale
 # para Pinecone, Weaviate, Qdrant e Milvus — a API muda, o modelo não.
 
-import shutil
 from pathlib import Path
 
 import chromadb
@@ -38,11 +37,22 @@ print("=" * 74)
 chunks = por_estrutura(REGULAMENTO)
 vetores = gerar_matrix_embbeddings([c["texto"] for c in chunks])
 
-if BANCO.exists():
-    shutil.rmtree(BANCO)
 cliente = chromadb.PersistentClient(path=str(BANCO))
 colecao = cliente.get_or_create_collection(
     name="regulamento", metadata={"hnsw:space": "cosine"})
+
+# APAGAR ANTES DE INSERIR, e isto não é limpeza: é correção.
+#
+# O `add` ACRESCENTA — ele não substitui o que já está lá. Rodar o script
+# duas vezes sem esta linha indexaria o regulamento duas vezes, e a busca
+# passaria a devolver o mesmo artigo repetido nas primeiras posições.
+#
+# O banco é PERSISTENTE: o que a execução anterior gravou continua em
+# disco. É a propriedade que justifica usá-lo, e é a mesma que obriga a
+# decidir, a cada carga, se o corpus é para somar ou para substituir.
+existentes = colecao.get()["ids"]
+if existentes:
+    colecao.delete(ids=existentes)
 
 # Quatro listas paralelas, e é sempre assim em qualquer banco vetorial:
 colecao.add(
