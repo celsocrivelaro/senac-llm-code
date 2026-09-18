@@ -226,4 +226,5 @@ aula08-memoria/memoria_db/
 # Sem prefixo de pasta de propósito: o laboratório muda de nome e a regra
 # continua valendo.
 indice/
+indice-*/
 *.db
