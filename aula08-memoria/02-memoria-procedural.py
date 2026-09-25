@@ -51,13 +51,3 @@ de_novo = procedural.gravar("Ids de funcionário têm o formato F seguido de "
                             "três dígitos; F-88 é erro de digitação de F-088.")
 print(f"  gravar a mesma regra de novo: {de_novo}  (False = já existia)")
 print(f"  total de regras: {len(procedural.regras())}")
-
-print("""
-  A regra é a própria chave. Sem essa verificação, um agente que reaprende a
-  mesma lição a cada execução acumula duplicatas no system prompt, e o custo
-  fixo de janela cresce sem que nada seja aprendido.
-
-  É também o tipo de memória que mais escapa a uma remoção sob pedido: uma
-  regra derivada do erro de um titular pode não conter o identificador dele.
-  O script 04-esquecer-remocao.py trata disso.
-""")

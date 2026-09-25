@@ -120,15 +120,3 @@ for t in trechos:
 r = responder(pergunta, trechos)
 print(f"\n  resposta: {r['resposta'][:200]}")
 print(f"  fontes: {r['fontes']}")
-print("""
-O modelo selecionou uma das duas versões sem sinalizar a existência da outra.
-Essa falha não é capturada por nenhum campo do contrato de saída nem pelas
-métricas do script 02: o recall está alto, porque o trecho correto foi
-recuperado, e a fidelidade está alta, porque a resposta se apoia nos trechos.
-Ambas as métricas aprovam a execução. A causa está no CORPUS.
-
-O desempate exigiria ordenar as duas versões por data, e a similaridade não
-o faz: o vetor não representa anterioridade (cegueira de TEMPO, nota 02).
-A aula 08 retoma o caso com dois fatos verdadeiros em datas diferentes na
-memória de um agente.
-""")

@@ -184,18 +184,6 @@ print(f"""
                      {len(relevantes)} fragmentos, ~{tokens_memoria} tokens, escolhidos por relevância
 """)
 
-print("=" * 74)
-print("NENHUMA DAS DUAS É VERSÃO PIOR DA OUTRA")
-print("=" * 74)
-print(f"""
-  O checkpoint falha na pergunta 2 e a memória falha na pergunta 1, e as
-  duas falham pelo mesmo motivo — cada uma guardou o que a SUA pergunta
-  exige. Íntegro serve para retomar; fragmento serve para lembrar.
-
-  O checkpoint do script 00 não é uma memória mal feita. É outra coisa, e
-  a partir daqui a aula constrói a que falta.
-""")
-
 # ISTO é memória: recuperação sobre o passado. É a aula 07 apontada para
 # dentro — mesmo mecanismo, objeto diferente.
 #

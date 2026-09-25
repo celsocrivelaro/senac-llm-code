@@ -47,10 +47,3 @@ de_novo = semantica.gravar("F-088", "destinos_frequentes",
                            ["Lisboa", "Curitiba"], "2026-08-11")
 print(f"  segunda gravação do mesmo fato: ja_existia={de_novo.get('ja_existia')}")
 print(f"  total de fatos armazenados: {len(semantica.fatos)}")
-
-print("""
-  A chave é `entidade:chave`, derivada do conteúdo do fato. Um `uuid4()` por
-  chamada não é chave de idempotência: produziria um registro novo a cada
-  reprocessamento, e o volume cresceria com o número de tentativas em vez de
-  com o número de fatos.
-""")

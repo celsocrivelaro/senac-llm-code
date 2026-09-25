@@ -100,34 +100,3 @@ print()
 for e in episodica.recuperar(CONSULTA, k=K, funcionario="F-088"):
     marca = "  <-- internacional" if e_internacional(e["resumo"]) else ""
     print(f"  [{e['data']}] {e['resumo'][:80]}{marca}")
-
-print("""
-  `funcionario` é metadado, gravado no `gravar()` junto com `data` e
-  `veredito`. Por isso é filtrável — e por isso o filtro é exato, enquanto a
-  ordenação por similaridade é aproximada.
-
-  Colocar "F-088" no texto da consulta não teria o mesmo efeito: o vetor não
-  distingue F-088 de F-091 (cegueira de ENTIDADE, aula 07, nota 02 §4).
-""")
-
-# ================================= O QUE NÃO É METADADO NÃO SE FILTRA
-print("=" * 74)
-print("E `internacional` NÃO É METADADO")
-print("=" * 74)
-print(f"""
-  Os metadados gravados são: data, funcionario, veredito.
-
-  "Internacional" existe apenas dentro do texto do resumo, e texto só se
-  alcança por similaridade — que é exatamente o que falhou acima.
-
-  A correção não está na consulta. Está no GRAVAR: se a distinção entre
-  doméstico e internacional decide alguma resposta, ela precisa ser um campo
-  no momento da escrita.
-
-      metadatas=[{{"data": ..., "funcionario": ..., "veredito": ...,
-                  "internacional": e["cidade"] in INTERNACIONAIS}}]
-
-  É a decisão de projeto que o exercício de entrega desta aula cobra: o que
-  vira metadado é escolhido antes de indexar, e uma consulta não recupera a
-  distinção que a escrita não guardou.
-""")

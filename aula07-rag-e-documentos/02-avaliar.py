@@ -83,10 +83,3 @@ else:
 
 print(f"  recall@{K}={r_busca['recall']:.0%} · fidelidade={fid:.0%}")
 print(f"  -> {veredito}")
-
-print("""
-Um número único de qualidade não distingue os três casos da tabela acima, e
-por isso não indica onde intervir. As duas métricas medidas separadas
-indicam: recall baixo aponta para o índice, fidelidade baixa aponta para o
-prompt, e as duas altas com resposta errada apontam para o corpus.
-""")

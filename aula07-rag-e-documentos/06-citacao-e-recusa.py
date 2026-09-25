@@ -84,8 +84,3 @@ for caso in PERGUNTAS[:6]:
     print()
 
 print(f"  fontes inventadas no total: {inventadas_total}")
-print("""
-Uma fonte que não existe no corpus é mais nociva que a ausência de fonte:
-ela sinaliza ao leitor uma verificação que não ocorreu. A checagem acima
-custa zero chamadas e pode rodar sobre toda resposta em produção.
-""")

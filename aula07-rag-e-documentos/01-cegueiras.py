@@ -116,30 +116,3 @@ meteorologia.
 
 O menor dos quatro valores é {menor[0]} ({menor[1]:.4f}), e ainda assim está acima do
 piso. Nenhuma das quatro propriedades foi representada.""")
-
-print("""
-CONSEQUÊNCIA PARA O PROJETO DE RECUPERAÇÃO.
-
-Cada uma das quatro propriedades tem um instrumento exato e barato:
-
-    magnitude      operador de comparação numérica  (<=)
-    identidade     igualdade ou índice invertido    (==)
-    anterioridade  carimbo de tempo e max()
-    polaridade     campo de domínio fechado, filtrado na consulta
-
-Nenhum dos quatro envolve cosseno, e nenhum envolve chamada ao modelo. O
-vetor é o instrumento da quinta comparação — a de ASSUNTO —, que é um
-problema real: localizar, entre quarenta artigos, os três que tratam do tema
-da pergunta.
-
-As quatro cegueiras não são defeito de qualidade do modelo de embedding, e
-trocá-lo não as elimina: são propriedades do que a representação mede. A
-aula 06 já as havia encontrado três vezes — o piso de cosseno acima de zero,
-a pergunta que falha porque três parágrafos só diferem por faixa de valor, e
-o par de mensagens opostas roteado para o mesmo destino.
-
-O que muda nesta aula é a forma do sintoma. Na aula 06 o defeito aparecia
-como um número na tela. Num pipeline de RAG ele aparece como resposta
-fluente com fonte citada, e os modos de falha 1 e 4 do script 05 são estas
-mesmas cegueiras nessa forma.
-""")

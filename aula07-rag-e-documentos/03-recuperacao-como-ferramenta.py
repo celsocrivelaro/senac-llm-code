@@ -139,24 +139,3 @@ print(f"""
   dos três necessários, encontrou: {encontrados}
   chamadas de geração: {GERACAO['chamadas'] - chamadas_antes}
 """)
-
-print("=" * 74)
-print("O QUE ACABOU DE SER CONSTRUÍDO")
-print("=" * 74)
-print("""
-COMPARAÇÃO ENTRE OS DOIS CAMINHOS.
-
-    pipeline   1 busca, 1 chamada de geração, caminho fixo
-               resolve perguntas cujo trecho de resposta é único
-
-    laço       N buscas + N+1 chamadas, N decidido em execução
-               resolve perguntas que exigem trechos independentes
-
-O pipeline é mais barato e tem custo previsível antes da execução. O laço
-custa mais e alcança uma classe de pergunta que o pipeline não alcança.
-
-A escolha entre os dois não é feita para o sistema inteiro, e sim por
-pergunta: é o roteador da aula 05 aplicado à recuperação. Classificar a
-pergunta antes de decidir o caminho é mais barato que executar o caminho
-caro para todas.
-""")

@@ -43,10 +43,3 @@ for caso in PERGUNTAS[:4]:
     print(f"  R: {r['resposta'][:150]}")
     print(f"     fontes={r['fontes']}  esperado={caso['artigo']}  "
           f"suficiente={r['suficiente']}\n")
-
-print("""As quatro perguntas foram respondidas corretamente, e o resultado não
-generaliza: são perguntas cujo trecho de resposta existe no corpus, é único e
-não tem concorrente parecido. Essa é a classe que se testa à mão, e é onde o
-pipeline é confiável.
-
-As quatro classes em que ele falha estão no script 05.""")
