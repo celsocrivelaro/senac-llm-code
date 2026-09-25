@@ -11,7 +11,7 @@
 
 from datetime import date
 
-from dados import TRAJETORIAS
+from dados import EPISODIOS
 
 HOJE = date(2026, 10, 6)          # data fixa: o laboratório precisa ser reproduzível
 
@@ -31,7 +31,7 @@ print("DECAIMENTO — o fato envelheceu sem ser contradito")
 print("=" * 74)
 
 print(f"\n  hoje: {HOJE.isoformat()}\n")
-for t in sorted(TRAJETORIAS, key=lambda t: t["data"]):
+for t in sorted(EPISODIOS, key=lambda t: t["data"]):
     idade = idade_em_dias(t["data"])
     marca = "  <-- candidato a decair" if idade > DIAS_PARA_DECAIR else ""
     print(f"  {t['data']}  {idade:>3d} dias  {t['id']}{marca}")

@@ -22,10 +22,15 @@
 import json
 
 from checkpoint import CHECKPOINTS, carregar, salvar
-from dados import CHECKPOINT, FERRAMENTA_QUE_EXIGE_APROVACAO
+from dados import CHECKPOINT
 
 # O `salvar()` e o `carregar()` vivem no `checkpoint.py`, ao lado das três
 # memórias e separados delas — o módulo explica por quê.
+
+# `registrar_parecer` é ESCRITA, e escrita irreversível exige confirmação
+# humana (Aula 01, nota 03 §3). É no passo 2, portanto, que a execução do
+# `CHECKPOINT` pausou — e é essa pausa que este script reconstrói.
+FERRAMENTA_QUE_EXIGE_APROVACAO = "registrar_parecer"
 
 
 # ------------------------------------------------------------ A: a execução para

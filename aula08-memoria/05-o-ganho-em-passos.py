@@ -7,7 +7,7 @@
 # A tarefa é idêntica à do script 01, o que torna as duas execuções
 # comparáveis: a primeira ocorreu sem memória, e esta ocorre com ela.
 
-from dados import TRAJETORIAS
+from dados import EPISODIOS
 from memoria_episodica import MemoriaEpisodica
 
 # A tarefa corrente. O texto é idêntico nos scripts 01, 02 e neste: a aula
@@ -20,7 +20,7 @@ print("A MEDIDA QUE FECHA A FASE")
 print("=" * 74)
 
 memoria = MemoriaEpisodica(recriar=True)
-memoria.gravar(TRAJETORIAS)
+memoria.gravar(EPISODIOS)
 uteis = memoria.recuperar(TAREFA, k=3)
 
 print(f"""

@@ -1,7 +1,8 @@
 # Aula 08 — A memória EPISÓDICA: o que aconteceu, e quando.
 #
 # Emprega o mesmo mecanismo da aula 07 sobre outro objeto: em vez de indexar
-# documentos, indexa TRAJETÓRIAS de execução.
+# documentos, indexa EPISÓDIOS — o registro do que o agente fez numa
+# execução anterior, e no que deu.
 #
 # A estrutura é um banco vetorial porque a consulta dirigida a ela — "já
 # ocorreu algo parecido com isto?" — é uma pergunta sobre assunto, e não
@@ -24,7 +25,7 @@ class MemoriaEpisodica:
             shutil.rmtree(caminho)
         self.cliente = chromadb.PersistentClient(path=str(caminho))
         self.colecao = self.cliente.get_or_create_collection(
-            name="trajetorias", metadata={"hnsw:space": "cosine"})
+            name="episodios", metadata={"hnsw:space": "cosine"})
 
     def gravar(self, episodios: list[dict]) -> None:
         if not episodios:

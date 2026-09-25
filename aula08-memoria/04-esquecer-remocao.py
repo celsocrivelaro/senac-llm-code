@@ -20,7 +20,7 @@ from checkpoint import arquivos as checkpoints_existentes
 from checkpoint import esquecer as esquecer_checkpoints
 from checkpoint import procurar as procurar_em_checkpoints
 from checkpoint import salvar as salvar_checkpoint
-from dados import CHECKPOINT, TRAJETORIAS
+from dados import CHECKPOINT, EPISODIOS
 from memoria_episodica import MemoriaEpisodica
 from memoria_procedural import MemoriaProcedural
 from memoria_semantica import MemoriaSemantica
@@ -28,7 +28,7 @@ from memoria_semantica import MemoriaSemantica
 CODIGO_FUNCIONARIO = "F-088"
 
 episodica = MemoriaEpisodica(recriar=True)
-episodica.gravar(TRAJETORIAS)
+episodica.gravar(EPISODIOS)
 
 semantica = MemoriaSemantica()
 semantica.gravar(CODIGO_FUNCIONARIO, "destinos_frequentes",

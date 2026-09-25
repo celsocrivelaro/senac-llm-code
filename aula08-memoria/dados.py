@@ -1,7 +1,7 @@
 # Aula 08 — Memória
 # O dado compartilhado da aula, em duas peças:
 #
-#   TRAJETORIAS  as dez execuções antigas a indexar — a massa sobre a qual
+#   EPISODIOS    as dez execuções antigas a indexar — a massa sobre a qual
 #                toda a aula trabalha, o que o agente já fez e no que deu
 #   CHECKPOINT   uma dessas execuções na forma ÍNTEGRA — o estado inteiro,
 #                serializável — que é o assunto dos dois primeiros scripts
@@ -16,16 +16,20 @@
 # dentro de um arquivo chamado `dados.py` reimporta o próprio módulo, e
 # Python interrompe com "partially initialized module".
 #
-# ============================================================ AS TRAJETÓRIAS
+# =============================================================== OS EPISÓDIOS
 #
-# Dez execuções anteriores do agente de prestação de contas, com acertos e
+# EPISÓDIO é o termo da literatura para a unidade que a memória episódica
+# guarda: o registro de um acontecimento, com o que foi feito, quando, e
+# qual foi o resultado.
+#
+# São dez execuções anteriores do agente de prestação de contas, com acertos
 # erros. É o que a memória EPISÓDICA indexa: não documentos, e sim o que o
 # próprio agente fez.
 #
 # `data` existe porque similaridade não desempata data (aula 06, cegueira
 # TEMPO). O bloco 5 depende deste campo.
 
-TRAJETORIAS = [
+EPISODIOS = [
     {"id": "exec-0a1f", "data": "2026-03-12", "funcionario": "F-088",
      "despesa": "D-4102", "veredito": "aprovado",
      "resumo": "Refeição de R$ 84,00 em viagem a Curitiba. Dentro do teto "
@@ -96,7 +100,7 @@ TRAJETORIAS = [
 # pausa, grava e retoma; o `01` o contrasta com o fragmento que a memória
 # guarda da MESMA execução.
 #
-# É a execução `exec-0a1f`, a mesma que abre as TRAJETORIAS acima — e a
+# É a execução `exec-0a1f`, a mesma que abre os EPISODIOS acima — e a
 # comparação entre as duas formas é o assunto do script 01.
 
 CHECKPOINT = {
@@ -124,8 +128,3 @@ CHECKPOINT = {
     "resposta": "Aprovado: R$ 84,00 dentro do teto de R$ 120,00 (Art. 4º §1º).",
     "historico": ["...12 mensagens, omitidas por espaço..."],
 }
-
-# `registrar_parecer` é ESCRITA, e escrita irreversível exige confirmação
-# humana (Aula 01, nota 03 §3). É no passo 2, portanto, que a execução
-# acima pausou — e é essa pausa que o script 00 reconstrói.
-FERRAMENTA_QUE_EXIGE_APROVACAO = "registrar_parecer"

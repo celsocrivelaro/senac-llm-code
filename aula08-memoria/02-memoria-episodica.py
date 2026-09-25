@@ -15,9 +15,9 @@
 # pergunta sobre ASSUNTO, e assunto é o que a similaridade representa.
 #
 # É o mecanismo da aula 07 aplicado a outro objeto: em vez de indexar
-# documentos, indexa trajetórias.
+# documentos, indexa EPISÓDIOS.
 #
-# ESCOPO DESTE SCRIPT. Indexa as dez trajetórias, executa uma consulta por
+# ESCOPO DESTE SCRIPT. Indexa os dez episódios, executa uma consulta por
 # similaridade e CONFERE o que voltou. A conferência é o motivo de o script
 # existir na forma em que está: a consulta escolhida falha, e a falha é a da
 # aula 07 num objeto novo.
@@ -25,7 +25,7 @@
 # CUSTO DE CONSULTA: uma chamada de embedding para a consulta, mais a busca
 # vetorial. É o mais caro dos três.
 
-from dados import TRAJETORIAS
+from dados import EPISODIOS
 from memoria_episodica import MemoriaEpisodica
 
 # Os destinos fora do país, no corpus desta aula. A lista existe para que a
@@ -42,11 +42,11 @@ print("EPISÓDICA — o que aconteceu, quando  (Chroma, por similaridade)")
 print("=" * 74)
 
 episodica = MemoriaEpisodica(recriar=True)
-episodica.gravar(TRAJETORIAS)
+episodica.gravar(EPISODIOS)
 
-no_corpus = [t for t in TRAJETORIAS if e_internacional(t["resumo"])]
-print(f"\n  {len(TRAJETORIAS)} trajetórias indexadas, "
-      f"{len(no_corpus)} delas em viagem internacional.\n")
+no_corpus = [t for t in EPISODIOS if e_internacional(t["resumo"])]
+print(f"\n  {len(EPISODIOS)} episódios indexados, "
+      f"{len(no_corpus)} deles em viagem internacional.\n")
 
 CONSULTA = "refeição em viagem internacional"
 K = 2
@@ -69,7 +69,7 @@ print("O QUE A CONSULTA PEDIU, E O QUE ELA TROUXE")
 print("=" * 74)
 print(f"""
   a consulta pede viagem INTERNACIONAL
-  o corpus tem {len(no_corpus)} trajetórias internacionais entre {len(TRAJETORIAS)}
+  o corpus tem {len(no_corpus)} episódios internacionais entre {len(EPISODIOS)}
   dos {len(recuperados)} resultados recuperados, {len(acertos)} são internacionais
 """)
 
@@ -77,13 +77,13 @@ if len(acertos) < min(K, len(no_corpus)):
     print("""  A palavra "internacional" está na consulta e não trouxe as viagens
   internacionais. É a cegueira da aula 07 (nota 02) aparecendo na memória:
   o vetor representa ASSUNTO — "refeição", "viagem", "teto", "reembolso" —,
-  e todas as trajetórias do corpus tratam desse assunto. O que distingue
+  e todos os episódios do corpus tratam desse assunto. O que distingue
   Lisboa de Curitiba não é o assunto: é um ATRIBUTO da viagem.
 
   Atributo se filtra, não se busca.""")
 else:
     print("""  A consulta trouxe as internacionais. O resultado depende do corpus e do
-  modelo de embedding: com outro conjunto de trajetórias, a mesma consulta
+  modelo de embedding: com outro conjunto de episódios, a mesma consulta
   pode trazer as domésticas — porque o que distingue Lisboa de Curitiba não
   é o assunto do texto.""")
 

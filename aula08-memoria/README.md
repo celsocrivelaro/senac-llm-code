@@ -5,7 +5,8 @@ três pendências registradas na aula 03 (nota 04, §9): memória, MCP e
 multiagente.
 
 Sem dependência nova: Chroma vem da aula 07. O que muda é o **objeto
-indexado**: em vez de documentos, trajetórias.
+indexado**: em vez de documentos, **episódios** — o registro do que o agente
+fez numa execução anterior, e no que deu.
 
 **Este laboratório é autocontido.** Nenhum script importa de outra aula —
 não há `sys.path` apontando para fora desta pasta. O `embedding.py` é
@@ -43,9 +44,9 @@ mecanismo da aula 07 aplicado a outro objeto.
 
 ## Os módulos
 
-`dados.py` — o dado **compartilhado**, em duas peças: as dez trajetórias
-anteriores do agente de prestação de contas (lidas pelos scripts `01`, `02`
-e `05`) e o `CHECKPOINT`, uma delas na forma íntegra — o `00` o grava e
+`dados.py` — o dado **compartilhado**, em duas peças: os dez episódios
+anteriores do agente de prestação de contas (lidos pelos scripts `01`, `02`
+e `05`) e o `CHECKPOINT`, um deles na forma íntegra — o `00` o grava e
 retoma, e o `01` o compara com o fragmento que a memória guarda da mesma
 execução. Os demais dados residem no script que os utiliza: os fatos
 contraditórios no `04-esquecer-contradicao`, e a tarefa corrente nos três

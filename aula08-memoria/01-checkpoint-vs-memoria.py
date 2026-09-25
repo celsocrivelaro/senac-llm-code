@@ -21,7 +21,7 @@
 
 import json
 
-from dados import CHECKPOINT, TRAJETORIAS
+from dados import CHECKPOINT, EPISODIOS
 from memoria_episodica import MemoriaEpisodica
 
 # A tarefa corrente. O texto é idêntico nos scripts 01, 02 e 05: a aula
@@ -76,12 +76,12 @@ print(f"""
   falte inviabiliza a retomada.
 """)
 
-total_tokens = sum(t["tokens"] for t in TRAJETORIAS)
+total_tokens = sum(t["tokens"] for t in EPISODIOS)
 print("=" * 74)
-print(f"E existem {len(TRAJETORIAS)} destes gravados")
+print(f"E existem {len(EPISODIOS)} destes gravados")
 print("=" * 74)
 print(f"""
-  {len(TRAJETORIAS)} execuções · {sum(t['passos'] for t in TRAJETORIAS)} passos · {mil(total_tokens)} tokens
+  {len(EPISODIOS)} execuções · {sum(t['passos'] for t in EPISODIOS)} passos · {mil(total_tokens)} tokens
 
   Tudo isso está no disco. E a pergunta de agora é:
 
@@ -102,11 +102,11 @@ print("B — A MEMÓRIA: as mesmas dez, indexadas")
 print("=" * 74)
 
 episodica = MemoriaEpisodica(recriar=True)
-episodica.gravar(TRAJETORIAS)
+episodica.gravar(EPISODIOS)
 
 # A MESMA execução, nas duas formas. É a linha "estado íntegro × fragmento
 # selecionado" da tabela, com número.
-fragmento = next(t for t in TRAJETORIAS if t["id"] == CHECKPOINT["execucao_id"])
+fragmento = next(t for t in EPISODIOS if t["id"] == CHECKPOINT["execucao_id"])
 tokens_fragmento = em_tokens(fragmento)
 primeiro = CHECKPOINT["passos"][0]
 descartado = 100 - (tokens_fragmento * 100 // tokens_checkpoint)
@@ -177,7 +177,7 @@ print(f"""
   PERGUNTA 2 — "o que já se sabe que ajude na despesa de agora?"
 
       checkpoint ... NÃO RESPONDE
-                     não há por onde perguntar: seria ler os {len(TRAJETORIAS)} inteiros,
+                     não há por onde perguntar: seria ler os {len(EPISODIOS)} inteiros,
                      ~{mil(total_tokens // 4)} tokens, para descobrir quais {len(relevantes)} interessavam
 
       memória ...... RESPONDE

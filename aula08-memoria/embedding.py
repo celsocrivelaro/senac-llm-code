@@ -4,8 +4,8 @@
 # laboratório autocontido, sem depender da pasta da outra aula no `sys.path`.
 #
 # A função que transforma texto em vetor é a mesma; o que muda é o objeto
-# indexado. Na aula 06 eram artigos de um regulamento; aqui são TRAJETÓRIAS
-# de execução — o que o agente fez e qual foi o resultado.
+# indexado. Na aula 06 eram artigos de um regulamento; aqui são EPISÓDIOS —
+# o que o agente fez numa execução anterior, e qual foi o resultado.
 
 import time
 
