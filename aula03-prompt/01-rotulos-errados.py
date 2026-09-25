@@ -10,7 +10,7 @@
 #
 # Três condições, para separar as duas contribuições:
 #   A) exemplos com rótulos CORRETOS
-#   B) exemplos com rótulos EMBARALHADOS (errados de propósito)
+#   B) exemplos com rótulos EMBARALHADOS (incorretos, por construção)
 #   C) SEM exemplos
 #
 # A queda de A para B mede o valor do mapeamento.
@@ -45,7 +45,8 @@ INSTRUCAO = (
 # Embaralhamento FIXO, escrito à mão: cada exemplo recebe o rótulo do
 # seguinte. Nenhum fica com o rótulo certo, e o conjunto de rótulos usados
 # continua sendo exatamente o mesmo — que é a condição do experimento.
-# (Fixo e não aleatório para a turma inteira ver o mesmo resultado.)
+# O embaralhamento é fixo e não aleatório: o experimento precisa ser
+# reproduzível entre execuções.
 EXEMPLOS_EMBARALHADOS = [
     (mensagem, EXEMPLOS[(i + 1) % len(EXEMPLOS)][1])
     for i, (mensagem, _) in enumerate(EXEMPLOS)
@@ -106,7 +107,7 @@ print(
     "  A queda de A para B costuma ser PEQUENA: trocar os rótulos por rótulos\n"
     "  errados quase não atrapalha. A queda de B para C costuma ser GRANDE.\n"
     "\n"
-    "  Ou seja: os exemplos valem muito — mas não pelo motivo que você\n"
+    "  Ou seja: os exemplos valem muito — mas não pelo motivo que se supõe\n"
     "  imaginava. Eles ensinam QUAIS rótulos existem, QUE TIPO de texto entra\n"
     "  e QUAL o formato da resposta. O mapeamento certo é a menor parte.\n"
     "\n"

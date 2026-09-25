@@ -61,9 +61,9 @@ print(f"  cosseno(A, C) = {sim_alheio:.4f}   <- não têm relação nenhuma")
 # É este o número que a aula inteira usa. O sentido não está DENTRO do vetor:
 # está ENTRE vetores, e aparece só quando há mais de um para comparar.
 #
-# Repare que A e B quase não compartilham palavras — "refeições"/"almoçando",
-# "limitado"/"gastar" — e ainda assim ficam em 0,85. É isso que a busca por
-# palavra-chave não faz, e é a razão de o embedding existir.
+# A e B quase não compartilham palavras — "refeições"/"almoçando",
+# "limitado"/"gastar" — e ainda assim medem 0,85. É a operação que a busca
+# por palavra-chave não realiza, e a razão de o embedding existir.
 #
 # E repare no outro número: A e C não têm relação nenhuma e mesmo assim dão
 # 0,73, não zero. Por que o piso não é zero, e o que fazer com isso, é o

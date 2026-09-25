@@ -1,9 +1,9 @@
 # Aula 05 — Arquitetura de agentes
 # Dados compartilhados por todos os scripts da aula.
 #
-# O domínio é o MESMO das aulas 01-03 (a transportadora) de propósito: o
-# assunto de hoje é ARQUITETURA, e trocar de domínio ao mesmo tempo faria
-# você gastar atenção com o problema em vez de com a solução.
+# O domínio é o MESMO das aulas 01-03 (a transportadora), deliberadamente: o
+# assunto desta aula é ARQUITETURA, e trocar de domínio ao mesmo tempo
+# deslocaria a atenção para o problema em vez da solução.
 #
 # O exercício 04 usa um domínio diferente — prestação de contas — porque lá
 # a escolha da arquitetura é sua, e um domínio novo impede que você resolva

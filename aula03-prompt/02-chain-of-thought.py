@@ -2,7 +2,7 @@
 # 02 — Chain-of-thought: três jeitos de montar o MESMO pedido.
 #
 # Este script é sobre CONSTRUÇÃO DE PROMPT. O problema é sempre o mesmo; o
-# que muda é como você escreve o pedido:
+# que muda é como se escreve o pedido:
 #
 #   A) direto        — só o enunciado e o formato da resposta
 #   B) zero-shot CoT — acrescenta UMA frase: "Vamos pensar passo a passo"
@@ -37,7 +37,7 @@ MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 PAUSA = 0.5
 
 # Problemas de VÁRIAS ETAPAS, com resposta numérica verificável.
-# Repare que nenhum é difícil — são só multi-etapa, que é o critério que
+# Nenhum deles é difícil — são só multi-etapa, que é o critério que
 # decide o uso de CoT. Numa classificação, ele não ajudaria em nada.
 PROBLEMAS = [
     ("Uma loja vende canetas em caixas de 12 por R$ 30 a caixa e avulsas por "
@@ -59,7 +59,7 @@ PROBLEMAS = [
 # AS TRÊS FORMAS DE MONTAR O PROMPT — é aqui que está a aula.
 # ---------------------------------------------------------------------------
 
-# Comum às três: o contrato de saída. Sem isso, você não consegue nem
+# Comum às três: o contrato de saída. Sem isso, não há como
 # verificar se o modelo acertou (nota 01, §4).
 FORMATO = ("\n\nTermine a resposta com uma última linha exatamente assim:"
            "\nRESPOSTA: <número>")
@@ -74,7 +74,7 @@ def prompt_zero_shot_cot(enunciado):
     return enunciado + "\n\nVamos pensar passo a passo." + FORMATO
 
 # C) FEW-SHOT CoT — mostra UM exemplo resolvido, com o raciocínio à vista.
-#    Repare no que o exemplo ensina: não é a resposta, é O FORMATO DO
+#    O que o exemplo ensina: não é a resposta, é O FORMATO DO
 #    RACIOCÍNIO — enumerar, calcular, comparar, concluir.
 EXEMPLO_RESOLVIDO = """Exemplo de como resolver:
 
@@ -170,7 +170,7 @@ print(
     "  - Na A o modelo salta direto para um número. Quando ele erra, não há\n"
     "    onde procurar o erro — não existe raciocínio para conferir.\n"
     "  - Na B, UMA frase muda o comportamento: ele enumera, calcula e só\n"
-    "    então conclui. É a mesma quantidade de trabalho que você teve para\n"
+    "    então conclui. É a mesma quantidade de trabalho gasta para\n"
     "    escrever o prompt: uma linha.\n"
     "  - Na C, o exemplo resolvido ensina o FORMATO do raciocínio. Compare a\n"
     "    estrutura da resposta com a do exemplo — o modelo imita o caminho,\n"
@@ -185,5 +185,5 @@ print(
     "\n"
     "  Experimente: pegue uma mensagem do script 00 e classifique com e sem\n"
     "  'vamos pensar passo a passo'. O acerto não melhora — e a resposta\n"
-    "  fica cheia de texto que você não pediu."
+    "  fica cheia de texto não solicitado."
 )

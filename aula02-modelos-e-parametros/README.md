@@ -6,9 +6,9 @@ instalar.
 
 ## Ordem sugerida
 
-| Script | O que você vai ver |
+| Script | O que demonstra |
 |---|---|
-| `00-catalogo-modelos.py` | Quais modelos a sua chave enxerga, o contexto de cada um e quem suporta *function calling*. Rode primeiro: os outros scripts citam nomes de modelo que você confirma aqui. |
+| `00-catalogo-modelos.py` | Quais modelos a sua chave enxerga, o contexto de cada um e quem suporta *function calling*. Rode primeiro: os outros scripts citam nomes de modelo confirmados aqui. |
 | `01-temperatura.py` | A mesma pergunta em 5 temperaturas, 4 amostras cada. Mede quantas respostas distintas saem e a diversidade do vocabulário. |
 | `02-top-p-e-penalidades.py` | `top_p`, `frequency_penalty` e `presence_penalty`, medindo repetição de trigramas. Inclui o experimento de penalidade **negativa**. |
 | `03-limites-e-parada.py` | `max_tokens`, `stop` e o campo `finish_reason` — como detectar truncamento em vez de deixá-lo virar bug lá na frente. |
@@ -24,9 +24,9 @@ source .venv/bin/activate        # a partir da raiz do repositório
 python aula02-modelos-e-parametros/00-catalogo-modelos.py
 ```
 
-Dois ajustes que você provavelmente vai precisar fazer:
+Dois ajustes provavelmente necessários:
 
-1. **Nomes de modelo** — dois lugares diferentes, de propósito:
+1. **Nomes de modelo** — dois lugares diferentes, deliberadamente:
 
    - nos scripts **`00` a `05`**, o modelo vem do `.env` (`LLM_MODELO`), junto
      com o endpoint (`LLM_BASE_URL`). Nenhum nome está escrito no código, então
@@ -43,7 +43,7 @@ Dois ajustes que você provavelmente vai precisar fazer:
 2. **Preços** — o `06` tem um dicionário `PRECOS` logo abaixo dos modelos.
    Confira os valores em <https://mistral.ai/pricing> e anote a data da
    consulta; preço de LLM muda, e material que finge saber o preço de amanhã
-   mente. Se você trocar um modelo, troque o preço na mesma linha.
+   mente. Trocado um modelo, troque o preço na mesma linha.
 
 ## Custo e rate limit
 
@@ -53,7 +53,7 @@ Os scripts fazem várias chamadas em sequência. Eles já usam prompts curtos,
 - rodar tudo de ponta a ponta custa alguns centavos de dólar — pouco, e a
   aula é justamente sobre não ignorar esse "pouco" multiplicado por volume;
 - se aparecer `429`, aumente a constante `PAUSA` no topo do script e espere
-  alguns segundos — a turma inteira está batendo na mesma API.
+  alguns segundos: o limite é por chave, e execuções simultâneas o dividem.
 
 ## Entregável
 

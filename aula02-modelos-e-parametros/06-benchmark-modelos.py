@@ -2,7 +2,7 @@
 # 06 — Benchmark próprio: a mesma bateria de tarefas em vários modelos,
 #      medindo latência, TTFT, tokens e custo.
 #
-# Esta é a peça central da aula. Leaderboard público não decide nada por você:
+# Esta é a peça central da aula. Leaderboard público não decide nada pela aplicação:
 # ele mede tarefas que não são a sua, com prompts que não são os seus, e a
 # média esconde a variância. O que decide é ESTA tabela, com as SUAS tarefas.
 #
@@ -11,7 +11,7 @@
 #   tokens/s                   — quão rápido o texto sai depois disso;
 #   custo                      — tokens de entrada e saída × preço.
 #
-# Saída: tabela no terminal + arquivo benchmark.csv para você analisar.
+# Saída: tabela no terminal + arquivo benchmark.csv para análise.
 
 import os
 import csv
@@ -29,7 +29,7 @@ client = OpenAI(
 # Os três modelos comparados — um pequeno, um médio e um grande.
 #
 # Estes ficam fixos aqui, e não no .env, porque eles NÃO são configuração: são
-# o objeto do experimento. O gráfico deste script só significa algo se você
+# o objeto do experimento. O gráfico deste script só significa algo se
 # souber exatamente quais modelos entraram na conta, e cada nome vem com um
 # preço ao lado que tem de mudar junto.
 #

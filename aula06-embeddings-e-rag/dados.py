@@ -8,7 +8,7 @@
 #
 # O domínio é a PRESTAÇÃO DE CONTAS, o mesmo do exercício da aula 05. Nas
 # aulas 01-05 o conhecimento do agente vinha de um dict escrito à mão; aqui
-# ele passa a vir de um documento que ninguém vai estruturar.
+# ele vem de um documento em prosa, que não será convertido em estrutura.
 
 # ============================================================ O REGULAMENTO
 #

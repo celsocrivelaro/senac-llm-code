@@ -74,7 +74,7 @@ As quatro listas acima são o modelo de dados inteiro de um banco vetorial:
   ids         a chave primária. Reinserir o mesmo id SUBSTITUI.
   documents   o texto original. O banco guarda, não interpreta.
   metadatas   os campos estruturados — é por eles que se FILTRA.
-  embeddings  o vetor. Repare que ele vai PRONTO: o banco não embute nada.
+  embeddings  o vetor, entregue PRONTO: o banco não embute nada.
 
 Esse último ponto é decisão de projeto, não detalhe. Muitos bancos aceitam
 embutir por você; fazer isso esconde qual modelo produziu os vetores, e o
@@ -152,9 +152,9 @@ E o número que volta é DISTÂNCIA, não score. Com métrica de cosseno:
   pergunta pertinente          {r['distances'][0][0]:.4f}     {1 - r['distances'][0][0]:.4f}
   pergunta fora do domínio     {d_fora:.4f}     {1 - d_fora:.4f}
 
-Repare na última linha: a pergunta que o regulamento NÃO responde não veio
-com distância alta. Veio em {1 - d_fora:.4f} de cosseno, que é o piso que o script 01
-mediu entre textos sem relação nenhuma.
+Na última linha, a pergunta que o regulamento NÃO responde não veio com
+distância alta: veio em {1 - d_fora:.4f} de cosseno, que é o piso medido pelo script 01
+entre textos sem relação alguma.
 
     O BANCO NÃO SABE DIZER "NÃO TENHO ISSO". Ele devolve os k mais
     próximos, sempre, mesmo que os k sejam todos irrelevantes.

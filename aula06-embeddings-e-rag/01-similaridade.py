@@ -59,9 +59,9 @@ for rotulo, score in ranquear(vetor_pergunta, matriz, rotulos, k=len(FRASES)):
     print(f"  {score:.4f}  {barra:<50s}  {rotulo}")
 
 print("""
-Repare na FAIXA. As frases sobre futebol e previsão do tempo não têm relação
-nenhuma com a pergunta, e ainda assim não chegam perto de zero. Textos em
-português compartilham estrutura, e o vetor captura isso.
+A FAIXA é o que importa aqui. As frases sobre futebol e previsão do tempo
+não têm relação alguma com a pergunta, e ainda assim não se aproximam de
+zero. Textos em português compartilham estrutura, e o vetor a representa.
 
 Consequência prática: um limiar absoluto escolhido no chute ("aceito acima
 de 0,8") não funciona. O que funciona é o RANKING — e, quando for preciso um

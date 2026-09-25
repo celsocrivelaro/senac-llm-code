@@ -1,20 +1,20 @@
 # Aula 03 — Prompt engineering
 # 04 — Tool calling: o laço completo, em quatro tempos (o padrão ReAct).
 #
-#   1. VOCÊ declara as ferramentas na chamada
+#   1. A APLICAÇÃO declara as ferramentas na chamada
 #   2. O MODELO decide  -> finish_reason="tool_calls" + nome e argumentos
 #   3. O SEU CÓDIGO executa a função Python
-#   4. VOCÊ devolve o resultado como mensagem role="tool" e chama de novo
+#   4. A APLICAÇÃO devolve o resultado como mensagem role="tool" e chama de novo
 #
 # O modelo NUNCA executa nada. Ele nem sabe que as suas funções existem como
 # código — só viu a descrição delas. Toda a segurança mora nessa separação.
 #
 # ESTE LAÇO TEM NOME: ReAct (Reasoning + Acting, Yao et al., 2022) — o mesmo
-# padrão que vocês viram na aula 01, nota 03. A correspondência:
+# padrão visto na aula 01, nota 03. A correspondência:
 #
 #     Thought      -> o modelo decide (finish_reason="tool_calls")
 #     Action       -> o SEU código executa a função Python
-#     Observation  -> a mensagem role="tool" que você devolve
+#     Observation  -> a mensagem role="tool" devolvida pela aplicação
 #
 # O ReAct é de 2022, ANTES de existir tool calling nativo. Na formulação
 # original o laço era emulado em TEXTO: o modelo escrevia literalmente
@@ -23,8 +23,8 @@
 # quebrava a cada variação de formato. Hoje o schema garante a estrutura.
 # O padrão não mudou; ele saiu do prompt e foi para o schema.
 #
-# O log abaixo usa os nomes do paper de propósito, para você ver o padrão
-# acontecendo.
+# O log abaixo adota a nomenclatura do paper, para que a correspondência
+# entre o padrão descrito e a execução seja direta.
 #
 # Este é o mesmo mecanismo da saída estruturada da aula 02 (nota 02, §7):
 # o campo `parameters` de cada ferramenta É um JSON Schema.

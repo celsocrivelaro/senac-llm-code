@@ -5,9 +5,8 @@
 #
 #     python 03-buscador.py "qual o teto de refeição em viagem?"
 #
-# Repare no que este script NÃO faz: não responde nada. Devolve trechos. A
-# geração sobre os trechos recuperados é o assunto da aula 07, e a fronteira
-# entre as duas aulas é exatamente essa.
+# Este script não gera resposta: devolve trechos. A geração sobre os trechos
+# recuperados é o assunto da aula 07, e é essa a fronteira entre as duas.
 
 import sys
 
@@ -29,8 +28,9 @@ if __name__ == "__main__":
     pergunta = " ".join(sys.argv[1:]) or "qual o teto de refeição em viagem?"
 
     # O índice é construído UMA VEZ, aqui, e a busca logo abaixo o RECEBE
-    # pronto. Não há atalho que o reconstrua sob demanda: seria a assimetria
-    # do fim deste script ao contrário, e o aluno copiaria o atalho.
+    # pronto. Não há atalho que o reconstrua sob demanda, porque um atalho
+    # assim inverte a assimetria que o fim deste script demonstra — e é o
+    # tipo de construção que se propaga por cópia.
     indice = IndiceMemoria(por_estrutura(REGULAMENTO))
 
     print("=" * 74)
@@ -65,8 +65,8 @@ operação. Um sistema que reconstruísse o índice a cada pergunta pagaria a
 primeira linha toda vez, e não haveria vantagem nenhuma sobre ler o
 documento inteiro.
 
-Na aula 07 o índice sai da memória e vai para disco, e é aí que o "uma vez"
-passa a valer entre execuções, e não só dentro de uma.""")
+Na aula 07 o índice sai da memória e vai para disco, e o "uma vez" passa a
+valer entre execuções, e não apenas dentro de uma.""")
 
     print("=" * 74)
     print("ONDE ESTE SCRIPT PARA")

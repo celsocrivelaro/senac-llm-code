@@ -60,10 +60,12 @@ for p in estado.passos:
 
 print(f"""
 {'=' * 78}
-Este objeto foi gravado em checkpoints/{estado.execucao_id}.json.
+Este objeto tem nome: é um TRACE — o registro estruturado do que a execução
+{estado.execucao_id} fez, quanto gastou, o que falhou e por que parou.
 
-Ele tem nome: é um TRACE. Você acabou de escrever o primeiro do curso, e
-ele é a matéria-prima das aulas de observabilidade e de evals.
+É o primeiro do curso, e é a matéria-prima das aulas de observabilidade e de
+evals. Ele não foi construído para isso: decorre do objeto de estado, sem
+custo adicional.
 
     Não se avalia o que não se rastreia.
 """)

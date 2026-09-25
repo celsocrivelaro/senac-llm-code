@@ -96,6 +96,6 @@ print(
     "  - Na tarefa MULTI-ETAPA compare a CORREÇÃO, não a velocidade — é aqui\n"
     "    que o custo extra se paga (ou não).\n"
     "  - Cuidado com max_tokens: se o orçamento acabar no meio do raciocínio,\n"
-    "    você paga tudo e não recebe resposta nenhuma. Veja o finish_reason.\n"
+    "    paga-se tudo sem receber resposta nenhuma. Veja o finish_reason.\n"
     "  - Regra prática: raciocínio para decidir, instruct para redigir."
 )

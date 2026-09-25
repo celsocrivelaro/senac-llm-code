@@ -51,7 +51,7 @@
 import json
 from agente import Orcamento, rodar, resumo
 LINHA = "=" * 78
-# Tarefa longa de propósito: 5 pedidos × (consultar + prazo + cliente).
+# A tarefa é longa por construção: 5 pedidos × (consultar + prazo + cliente).
 OBJETIVO = ("Faça um levantamento dos pedidos 48219, 77310, 90455, 31002 e "
             "55870. Para cada um, informe a situação, quantos dias de atraso "
             "tem (ou quantos faltam) e o nome do cliente. Consulte as "
@@ -59,11 +59,11 @@ OBJETIVO = ("Faça um levantamento dos pedidos 48219, 77310, 90455, 31002 e "
 MANTER_INTEGROS = 3          # os N resultados mais recentes ficam completos
 def tool_clearing(estado) -> None:
     """Substitui o CORPO de resultados antigos por um marcador curto.
-    Repare no que o marcador preserva: o nome da ferramenta e o fato de a
-    chamada ter acontecido. É isso que impede o agente de chamá-la de novo.
-    E repare no que NÃO se perde: `estado.passos` continua com o resultado
-    inteiro. A compressão é do que se ENVIA, não do que se sabe — por isso
-    o trace continua completo para auditoria."""
+    O marcador preserva duas informações: o nome da ferramenta e o fato de
+    a chamada ter ocorrido. São elas que impedem o agente de repeti-la.
+    O que não se perde: `estado.passos` mantém o resultado íntegro. A
+    compressão incide sobre o que é ENVIADO, não sobre o que é registrado,
+    e por isso o trace permanece completo para auditoria."""
     indices_tool = [i for i, m in enumerate(estado.historico)
                     if isinstance(m, dict) and m.get("role") == "tool"]
     if len(indices_tool) <= MANTER_INTEGROS:
@@ -90,7 +90,7 @@ def curva(estado, rotulo):
         barra = "#" * max(1, tokens // 400)
         print(f"   {i:>5} {tokens:>18} {acumulado:>12}  {barra}")
     return acumulado
-print(f"objetivo (tarefa longa de propósito):\n   {OBJETIVO}\n")
+print(f"objetivo (longo por construção):\n   {OBJETIVO}\n")
 # ------------------------------------------------------ A) sem tool clearing
 print(LINHA + "\nA) SEM tool clearing — nada nunca sai do histórico\n")
 a = rodar(OBJETIVO, orcamento=Orcamento(max_passos=20, max_tokens=120_000,

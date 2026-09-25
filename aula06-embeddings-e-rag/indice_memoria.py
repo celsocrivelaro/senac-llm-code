@@ -3,7 +3,7 @@
 # Os chunks, seus vetores, e a comparação de um vetor contra todos. É o que
 # transforma "tenho vetores" em "sei qual trecho responde".
 #
-# Repare no que NÃO está aqui, e onde cada coisa mora:
+# O que NÃO está neste módulo, e onde cada responsabilidade reside:
 #
 #   embedding.py              texto -> vetor (a única porta para a API)
 #   estrategias_chunking.py   documento -> chunks (manipulação de texto)

@@ -128,9 +128,9 @@ print("""Nenhuma chamada de geração. O router semântico da aula 05 gastaria u
 por mensagem; este gasta uma chamada de embedding, que é a modalidade
 barata, e devolve a rota sem escrever uma palavra.
 
-Repare na MARGEM: é a distância para o exemplar mais próximo de outra rota.
-Margem estreita significa decisão frágil, e vale mais que o score absoluto
-— um score de 0,80 com margem de 0,01 é um empate disfarçado.
+A MARGEM é a distância para o exemplar mais próximo de outra rota. Margem
+estreita indica decisão frágil, e é mais informativa que o score absoluto:
+um score de 0,80 com margem de 0,01 é um empate.
 """)
 
 # ------------------------------------------------------- onde ele quebra
@@ -157,9 +157,9 @@ print(f"""
 A reclamação vai para a fila errada. E não adianta mexer nos exemplares: o
 problema não está neles, está em como o vetor representa as duas frases.
 
-Repare no contexto em que isso acontece: não há corpus, não há trechos
-recuperados, não há modelo escrevendo. A aula 07 volta a este caso e
-mostra que ele não é isolado.
+O contexto em que isso ocorre não tem corpus, não tem trechos recuperados e
+não tem modelo gerando texto. O defeito é de representação, e a aula 07
+retoma o caso para mostrar que ele não é isolado.
 """)
 
 # ------------------------------------------------------------- a cascata
@@ -192,7 +192,7 @@ A ordem é a mesma da aula 05, e agora a forma do meio existe:
                      polaridade, número, identificador, data.
     EMBEDDING    ->  uma chamada barata. Resolve variação de redação,
                      que é justamente o que a regra não generaliza.
-    SEMÂNTICO    ->  uma chamada de geração. Resolve o que ninguém previu.
+    SEMÂNTICO    ->  uma chamada de geração. Resolve o caso não previsto.
 
 Cada degrau existe porque o anterior tem um limite conhecido. Um router que
 começa no degrau mais caro não está economizando nada — e um que nunca sobe

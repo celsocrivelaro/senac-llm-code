@@ -4,9 +4,9 @@
 # inteiro sem chamar o modelo generativo uma única vez; aqui os trechos
 # recuperados viram resposta, e é isso que fecha o RAG.
 #
-# É um prompt só, e de propósito. O contrato de saída — o campo `fontes`,
-# a recusa quando nada serve, a citação conferida em código — é assunto da
-# aula 07. Aqui o objetivo é ver a última etapa encaixar.
+# É um prompt só, deliberadamente. O contrato de saída — o campo `fontes`, a
+# recusa quando nada serve, a citação conferida em código — é assunto da
+# aula 07. Aqui o escopo é a última etapa do pipeline, isolada.
 
 from cliente import MODELO, client
 

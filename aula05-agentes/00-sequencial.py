@@ -16,9 +16,9 @@
 # escreve. Sem o portão, a etapa 2 recebe lixo e produz uma resposta
 # impecavelmente redigida sobre um pedido que não existe.
 #
-# SUGESTÃO DE USO EM SALA: rode e compare as duas colunas do relatório final.
-# Peça à turma que leia a resposta gerada SEM portão para a mensagem 3 antes
-# de dizer qual é o problema dela.
+# O relatório final traz duas colunas, com e sem portão. A resposta gerada
+# sem portão para a mensagem 3 é o caso a examinar: ela é fluente e trata de
+# um pedido que não existe.
 #
 # O QUE LEVAR DAQUI, depois de rodar:
 #
@@ -125,7 +125,7 @@ def extrair(mensagem: str) -> dict:
 # ================================================================ O PORTÃO
 # Quatro validações, quatro `if`. Nenhuma precisa de modelo, e nenhuma erra.
 #
-# Repare que elas são de DUAS naturezas:
+# As validações são de DUAS naturezas:
 #   - forma   (o campo tem o formato certo?)     -> 1 e 3
 #   - fato    (o que o cliente disse é verdade?) -> 2 e 4
 # A segunda natureza é a que o modelo não tem como verificar sozinho: ele não

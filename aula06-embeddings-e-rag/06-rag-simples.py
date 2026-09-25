@@ -3,7 +3,7 @@
 # O buscador dos scripts 02 e 03 devolve trechos. Este script fecha a volta:
 # os trechos viram RESPOSTA, e a arquitetura ganha nome.
 #
-# Duas coisas mudam em relação ao 03, e as duas são de propósito:
+# Duas coisas mudam em relação ao 03, e as duas são deliberadas:
 #
 #   1. o índice sai da memória e vai para um BANCO DE VETORES. Não é por
 #      desempenho — com 40 chunks numpy é instantâneo. É por persistência:
@@ -38,16 +38,15 @@ from indice_chroma import IndiceChroma
 # aula 04 — e a distinção não é de vocabulário: um workflow é testável
 # etapa por etapa e tem custo previsível.
 #
-# Repare no tamanho: a função inteira cabe em quinze linhas, e metade delas
-# é o portão.
+# A função inteira ocupa quinze linhas, e metade delas é o portão.
 
 def rag_simples(pergunta: str, indice: IndiceChroma, k: int = 3,
                 piso_distancia: float = 0.6) -> dict:
     """pergunta -> busca -> portão -> contexto -> resposta."""
     trechos = indice.buscar(pergunta, k=k)
 
-    # O PORTÃO, a etapa que quase ninguém escreve: se a busca não trouxe
-    # nada próximo, a geração NÃO RODA. É o mesmo portão do prompt chaining
+    # O PORTÃO, etapa frequentemente omitida: se a busca não trouxe nada
+    # próximo, a geração NÃO RODA. É o mesmo portão do prompt chaining
     # da aula 05 — código determinístico entre duas chamadas, interrompendo
     # a cadeia antes que uma etapa opere sobre entrada inválida.
     if not trechos or trechos[0]["distancia"] > piso_distancia:
@@ -78,9 +77,9 @@ A construção do índice acima custou UMA chamada de embedding, com os chunks
 todos juntos. As consultas abaixo custam uma de embedding e uma de geração
 cada — e, no banco, o índice sobrevive a esta execução.
 
-Repare que a busca devolve DISTÂNCIA, e não score: o Chroma com métrica de
-cosseno entrega d = 1 - cosseno. Aqui, baixo é bom — o contrário do que o
-script 01 imprimia.
+A busca devolve DISTÂNCIA, e não score: o Chroma com métrica de cosseno
+entrega d = 1 - cosseno. Aqui, valores baixos indicam proximidade — o
+inverso da escala que o script 01 imprimia.
 """)
 
 resultados = {}
@@ -102,9 +101,9 @@ print("=" * 74)
 print("ONDE ESTE SCRIPT PARA")
 print("=" * 74)
 print(f"""
-Repare na terceira pergunta. Ela NÃO TEM RESPOSTA no regulamento — fretes
-marítimos não são assunto de política de reembolso —, e mesmo assim o portão
-deixou passar. O trecho mais próximo veio a {distancia_fora:.4f} de distância, o
+A terceira pergunta NÃO TEM RESPOSTA no regulamento — fretes marítimos não
+são assunto de política de reembolso —, e mesmo assim o portão a deixou
+passar. O trecho mais próximo veio a {distancia_fora:.4f} de distância, o
 equivalente a {1 - distancia_fora:.4f} de cosseno.
 
 E esse número já era conhecido: é o PISO que o script 01 mediu entre textos

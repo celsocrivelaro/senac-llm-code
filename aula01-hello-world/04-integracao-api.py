@@ -103,7 +103,7 @@ messages = [
 ]
 
 # Pergunta ao usuário qual pokemon pesquisar
-pergunta = input("Qual pokemon você quer pesquisar? ")
+pergunta = input("Qual pokemon pesquisar? ")
 messages.append({"role": "user", "content": pergunta})
 
 # Loop do agente: o modelo pede ferramentas, executamos e devolvemos o resultado,

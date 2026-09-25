@@ -11,9 +11,9 @@ a orientação inversa da aula 03:
 > **Rode primeiro, leia o código depois.** O que estes scripts mostram são
 > números — passos, tokens, motivo de término — e o argumento está neles.
 
-O domínio é o mesmo das aulas anteriores (a transportadora), de propósito:
-trocar de domínio ao mesmo tempo faria você gastar atenção com o problema
-em vez de com a solução.
+O domínio é o mesmo das aulas anteriores (a transportadora),
+deliberadamente: trocar de domínio ao mesmo tempo deslocaria a atenção para
+o problema em vez da solução.
 
 **São dois os exercícios desta aula, e só um usa este código.** O de
 projeto (`05-trabalho.md`) pede a arquitetura do **seu** case e não exige
@@ -30,8 +30,8 @@ funcionando, isolado, para você ver o que ele cobra antes de escolher.
 | `02-orquestrador-trabalhador.py` | O mesmo lote analisado por *sectioning* (seções no seu código) e por orquestrador (seções decididas pelo modelo). Mostra por que o segundo precisa de **teto**. |
 | `03-avaliador-otimizador.py` | O mesmo texto avaliado por um avaliador vago e por um com **critério escrito**. O vago aprova na primeira rodada. |
 | `04-agente-com-estado.py` | O laço da aula 03 reescrito sobre um **objeto de estado**. No fim, o objeto responde as sete perguntas que `mensagens[]` não responderia. |
-| `05-orcamento-e-terminacao.py` | As **quatro formas de terminar**, disparadas de propósito, cada uma registrada no estado. |
-| `06-erros-e-laco.py` | **O script central.** Erro recuperável × fatal, e o detector de laço. Compare A e C: mesma tarefa, mesmo modelo, e a única diferença é o *texto* do erro. |
+| `05-orcamento-e-terminacao.py` | As **quatro formas de terminar**, cada uma disparada por construção e registrada no estado. |
+| `06-erros-e-laco.py` | Erro recuperável × fatal, e o detector de laço. Compare A e C: mesma tarefa, mesmo modelo, e a única diferença é o *texto* do erro. |
 | `07-compaction.py` | Uma trajetória longa com e sem *tool clearing*, com a curva de tokens por passo. **A curva é assunto desta aula; a técnica que a estabiliza é da Aula 08** — o script mora aqui porque depende do laço do `agente.py`. |
 
 `dados.py` guarda os pedidos, os clientes e as categorias — num lugar só,
@@ -59,9 +59,6 @@ Os quatro últimos não são quatro demonstrações: são **o mesmo agente visto
 quatro vezes**, crescendo. A pergunta em cada um é *"o que mudou desde o
 anterior?"*, e ela só tem resposta se o que não mudou estiver num lugar só.
 
-`checkpoints/` é criado em tempo de execução: cada execução grava o estado
-completo em JSON. Não está versionado.
-
 ## Antes de rodar
 
 ```bash
@@ -86,9 +83,8 @@ fazer. É decisão de laboratório, não descuido: três tentativas silenciosas
 escondem a causa, e num laboratório a causa quase sempre é configuração.
 
 Os scripts `00` a `03` nem isso têm — fazem a chamada crua e deixam a
-exceção do SDK subir. Também de propósito: tratamento de erro é o assunto
-do `06`, e chegar blindado ao `00` seria entregar a solução antes do
-problema.
+exceção do SDK subir. Também deliberado: tratamento de erro é o assunto do
+`06`, e um `00` já blindado apresentaria a solução antes do problema.
 
 As mensagens já trazem o encaminhamento. `429` quer dizer excesso de
 requisições: aumente a constante `PAUSA` no topo do script. `401` e `404`
@@ -141,5 +137,7 @@ passos.
 - **Nenhuma salvaguarda é grátis.** Orçamento apertado mata tarefa legítima,
   detector agressivo interrompe quem progredia devagar, compressão perde
   informação. Escolher a dose é o trabalho.
-- O estado que estes scripts gravam em `checkpoints/` tem nome: é um
-  **trace**. Ele é a matéria-prima das aulas de observabilidade e evals.
+- O objeto de estado que cada execução devolve tem nome: é um **trace**, e
+  ele cai de graça do que as salvaguardas já exigiam. É a matéria-prima das
+  aulas de observabilidade e evals. Persisti-lo em disco, para retomar uma
+  execução depois, é assunto da Aula 08.

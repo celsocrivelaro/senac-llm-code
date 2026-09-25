@@ -8,8 +8,8 @@
 # A razão de estes quatro dividirem um módulo é oposta: eles não são quatro
 # demonstrações, são O MESMO AGENTE visto quatro vezes. O 03 apresenta o
 # estado, o 04 as formas de terminar, o 05 os erros, o 06 a compressão. A
-# pergunta que o aluno faz em cada um é "o que mudou desde o anterior?" — e
-# ela só tem resposta se o que NÃO mudou estiver num lugar só.
+# pergunta que cada um responde é "o que mudou desde o anterior?", e ela só
+# tem resposta se o que NÃO mudou estiver num lugar só.
 #
 # Este arquivo é a nota 02 desta aula virando código. A ideia única:
 #
@@ -17,7 +17,7 @@
 #
 # O estado é um objeto; a lista de mensagens é DERIVADA dele a cada volta.
 # Sem essa separação, nada do que vem nos scripts 04, 05 e 06 é implementável:
-# orçamento, detecção de laço, checkpoint e compaction precisam de informação
+# orçamento, detecção de laço e compaction precisam de informação
 # que simplesmente não existe dentro de uma lista de dicionários de mensagem.
 #
 # Compare com o `04-tool-calling.py` da aula 03. O laço é o mesmo ReAct;
@@ -26,7 +26,7 @@
 import json
 import os
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from uuid import uuid4
@@ -44,7 +44,6 @@ client = OpenAI(
 )
 MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 
-CHECKPOINTS = Path(__file__).parent / "checkpoints"
 
 
 # ============================================================ EXCEÇÕES
@@ -369,9 +368,9 @@ def chamar(**kwargs):
     """Uma chamada, e só. Se falhar, o script para dizendo por quê.
 
     Em produção isto teria backoff exponencial (aula 02, nota 01 §8.2). Aqui
-    não tem, de propósito: num laboratório, a falha contornada por três
-    tentativas silenciosas esconde a causa — e a causa quase sempre é
-    configuração, não instabilidade.
+    não tem, deliberadamente: em laboratório, uma falha contornada por três
+    tentativas silenciosas oculta a causa, que costuma ser configuração e
+    não instabilidade.
 
     Continua valendo a distinção que o script 05 desenvolve: repetir serve
     para falha de TRANSPORTE. Falha de CONTEÚDO — um argumento inválido —
@@ -457,7 +456,6 @@ def executar(chamada, estado: Estado, exige_confirmacao: set[str] = frozenset())
         estado.termino = Termino.HUMANO
         estado.motivo = f"{nome} exige aprovação"
         estado.pendencia = {"ferramenta": nome, "argumentos": passo.argumentos}
-        salvar_checkpoint(estado)
         raise PausaParaHumano(nome)
 
     funcao = FERRAMENTAS.get(nome)
@@ -492,15 +490,6 @@ def detectar_laco(estado: Estado, limite: int = 3) -> bool:
     return len(set(recentes)) == 1
 
 
-def salvar_checkpoint(estado: Estado) -> None:
-    """Sempre DEPOIS de executar, nunca antes: se gravar a intenção e o
-    processo cair, a retomada reexecuta. É a idempotência que fecha a fresta."""
-    CHECKPOINTS.mkdir(exist_ok=True)
-    caminho = CHECKPOINTS / f"{estado.execucao_id}.json"
-    caminho.write_text(json.dumps(asdict(estado), ensure_ascii=False,
-                                  default=str, indent=2), encoding="utf-8")
-
-
 def rodar(objetivo: str,
           orcamento: Orcamento | None = None,
           fase: str = "tudo",
@@ -517,6 +506,10 @@ def rodar(objetivo: str,
       3. `historico` é campo do estado, e por isso pode ser reescrito (06).
     """
     orcamento = orcamento or Orcamento()
+    # O `estado` devolvido é o TRACE da execução, e é o mesmo objeto em TODOS
+    # os caminhos de saída — respondeu, orçamento esgotado, erro fatal e pausa
+    # para humano. O except que registra só o sucesso é o except que garante
+    # que você nunca vai achar a causa.
     estado = Estado(objetivo=objetivo, ferramentas_ativas=list(FASES[fase]))
 
     try:
@@ -583,10 +576,6 @@ def rodar(objetivo: str,
     except ErroFatal as e:
         estado.termino, estado.motivo = Termino.ERRO_FATAL, str(e)
         return estado
-    finally:
-        # O trace é gravado em TODOS os caminhos. O except que registra só o
-        # sucesso é o except que garante que você nunca vai achar a causa.
-        salvar_checkpoint(estado)
 
 
 def resumo(estado: Estado) -> str:

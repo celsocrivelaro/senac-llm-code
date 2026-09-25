@@ -44,7 +44,7 @@ LIMIAR = 0.90          # definido ANTES de ver o resultado — senão não testa
 
 
 # --------------------------------------------------------------------------
-# AS DUAS VERSÕES. Repare que cada uma nomeia a COMBINAÇÃO inteira, não só
+# AS DUAS VERSÕES. Cada uma nomeia a COMBINAÇÃO inteira, não só
 # o texto: é isso que o `versao` identifica, e é isso que vai no log.
 # --------------------------------------------------------------------------
 VERSOES = {
@@ -159,7 +159,7 @@ print(f"v1: {taxa_v1:.0%}   v2: {taxa_v2:.0%}   diferença: {taxa_v2 - taxa_v1:+
 if taxa_v2 < LIMIAR <= taxa_v1:
     print("\n>>> A suíte BLOQUEARIA esse PR.")
 elif taxa_v2 < taxa_v1:
-    print("\n>>> A v2 piorou, mas ficou acima do limiar. Você mergearia?")
+    print("\n>>> A v2 piorou, mas ficou acima do limiar. Mergear ou não?")
 else:
     print("\n>>> Nesta execução as duas passaram. Rode de novo — e veja o\n"
           ">>> comentário sobre flakiness no fim.")
@@ -195,5 +195,5 @@ print(
     "  Experimente: crie uma prompts/extracao-v3.md tentando consertar a v2\n"
     "  sem usar a palavra 'apenas' — por exemplo, com um exemplo negativo\n"
     "  ('não escreva explicação'). Acrescente ao dicionário VERSOES e rode.\n"
-    "  Você acabou de fazer um ciclo completo: mudou, mediu, comparou."
+    "  O ciclo completo se fechou: mudou, mediu, comparou."
 )

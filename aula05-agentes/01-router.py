@@ -9,9 +9,9 @@
 #
 #     quantas das 10 mensagens precisaram de LLM?
 #
-# A resposta é "menos do que você esperava". A rota mais valiosa de um Router
-# costuma ser a que NÃO CHAMA O MODELO — e é a que quase todo mundo esquece
-# de escrever, porque não parece IA.
+# A rota mais valiosa de um Router costuma ser a que NÃO CHAMA O MODELO. É
+# também a mais omitida, porque não tem aparência de solução de IA — e o
+# critério de valor aqui é custo por decisão, não semelhança com IA.
 #
 # AS TRÊS FORMAS DE ROTEAR, em ordem crescente de custo:
 #
@@ -111,7 +111,7 @@ MENSAGENS = [
     "quero saber do 55870",
 
     # (*) tem número E intenção de consulta — mas também tem reclamação.
-    #     A REGRA DECLINA de propósito: na dúvida, deixa para o modelo.
+    #     A REGRA DECLINA deliberadamente: na dúvida, delega ao modelo.
     "O pedido 48219 está atrasado há duas semanas e ninguém me responde. "
     "Isso é um absurdo, quero uma solução hoje.",
 
@@ -193,10 +193,12 @@ def router_modelo(mensagem: str) -> dict:
                        SCHEMA_ROTA, "rota", modelo=MODELO)
 
 
-# FORMA 2 — por EMBEDDING. Não está implementada, e a ausência é o ponto:
+# FORMA 2 — por EMBEDDING. Não está implementada aqui, e a ausência é
+# deliberada:
 # ela converteria a mensagem em vetor e a compararia com exemplos de cada
 # rota, decidindo sem gerar texto. Isso depende de embeddings, que é a
-# AULA 06 — e é lá que esta linha vira código.
+# AULA 06 — e é lá que esta linha vira código, no `04-router.py`, sobre
+# estas mesmas rotas.
 router_embedding = None
 
 FORMAS = {

@@ -5,7 +5,7 @@
 # montando prompt pela primeira vez. Mesma tarefa, mesmo modelo, mesmos
 # parâmetros. A ÚNICA diferença é a presença de 5 exemplos no prompt.
 #
-# Leia as duas funções que montam o prompt antes de rodar. Repare que o
+# Leia as duas funções que montam o prompt antes de rodar. Note-se que o
 # few-shot não explica mais nada ao modelo — ele MOSTRA. E mostra sempre no
 # MESMO formato, que é de onde o modelo tira a estrutura da resposta.
 #

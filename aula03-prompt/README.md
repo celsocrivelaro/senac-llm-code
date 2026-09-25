@@ -12,7 +12,7 @@ tarefa e o modelo ficam fixos — o que muda de uma condição para outra é
 
 ## Ordem sugerida
 
-| Script | O que você vai ver |
+| Script | O que demonstra |
 |---|---|
 | `00-zero-vs-few-shot.py` | A mesma classificação com e sem exemplos. O ganho do few-shot costuma ser de **formato**, antes de ser de acerto. |
 | `01-rotulos-errados.py` | O experimento do **Min et al. (2022)**: exemplos com rótulos corretos × embaralhados × sem exemplos. Rode este **antes** de ler a explicação e tente prever o resultado. |
@@ -22,8 +22,8 @@ tarefa e o modelo ficam fixos — o que muda de uma condição para outra é
 | `05-versao-de-prompt.py` | Duas versões do mesmo prompt — diferença de **uma palavra** — contra a mesma suíte de regressão. Mostra o que a suíte pega e o revisor humano não. |
 
 `dados.py` guarda o conjunto de teste e os exemplos usados pelos scripts
-`00` e `01` — num lugar só, de propósito: é o mesmo conjunto nos dois,
-senão os experimentos não seriam comparáveis entre si.
+`00` e `01` — num lugar só: é o mesmo conjunto nos dois, e sem isso os
+experimentos não seriam comparáveis entre si.
 
 `prompts/` guarda as duas versões do prompt usadas pelo `05`. Antes de rodar
 esse script, veja a diferença entre elas:
@@ -47,14 +47,15 @@ declarar `function_calling` nas capacidades.
 
 Os scripts fazem várias chamadas em sequência e já trazem uma pausa entre
 elas. Se aparecer `429`, aumente a constante `PAUSA` no topo do script e
-espere alguns segundos — a turma inteira está batendo na mesma API.
+espere alguns segundos: o limite é por chave, e execuções simultâneas o
+dividem.
 
 ## O que levar do laboratório
 
 - **Comece pelo prompt mais simples que pode funcionar.** Em quase todos os
   scripts, a condição mais barata de escrever (zero-shot, ou uma frase a
   mais) já resolve. Escalar a técnica sem medir é adivinhação.
-- **Cada frase do prompt deve eliminar uma possibilidade.** Se você apagar
+- **Cada frase do prompt deve eliminar uma possibilidade.** Suprimida a frase
   uma frase e não souber dizer o que ela impedia, ela não estava fazendo
   nada.
 - **Uma medição não é uma medição.** Com 10 mensagens de teste, diferenças

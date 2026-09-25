@@ -126,9 +126,9 @@ if resumo:
 print(
     "\nO que observar:\n"
     "  - A coluna [distribuição] é a parte interessante: quando o modelo\n"
-    "    diverge (ex.: 254×3 270×2), você está VENDO o caminho errado que o\n"
+    "    diverge (ex.: 254×3 270×2), fica VISÍVEL o caminho errado que o\n"
     "    N=1 poderia ter escolhido por azar.\n"
-    "  - Repare que o PROMPT é o mesmo do script 02. A técnica não está no\n"
+    "  - O PROMPT é o mesmo do script 02. A técnica não está no\n"
     "    texto — está em pedir várias respostas e comparar. É a primeira vez\n"
     "    no curso em que a solução não é escrever melhor, e sim MEDIR mais.\n"
     "  - Se o acerto não subiu de N=1 para N=5, a técnica não é para este\n"

@@ -17,7 +17,7 @@
 # O QUE LEVAR DAQUI, depois de rodar:
 #
 #   - o avaliador vago costuma aprovar na primeira rodada. Ele não está
-#     errado: ninguém disse a ele o que era estar bom;
+#     errado: o critério de "estar bom" não lhe foi dado;
 #   - a qualidade de um avaliador é a qualidade do CRITÉRIO que você
 #     escreveu. O modelo só executa;
 #   - `{"nota": 8}` é inútil. Item a item, com `o_que_corrigir`, é acionável;
@@ -48,7 +48,8 @@ def estruturado(prompt: str, schema: dict, nome: str,
     """Saída estruturada com decodificação restrita (aula 02, nota 02 §7).
 
     Aqui ela carrega o VEREDITO do avaliador: um booleano por item do
-    critério, e não uma nota de 0 a 10 que ninguém sabe interpretar."""
+    critério, e não uma nota de 0 a 10, que não tem interpretação
+    acordada."""
     mensagens = ([{"role": "system", "content": system}] if system else [])
     mensagens.append({"role": "user", "content": prompt})
     resposta = client.chat.completions.create(
@@ -193,7 +194,7 @@ def avaliador_com_criterio(texto: str):
 
 
 print(f"Pedido {PEDIDO} · previsão {DADOS['previsao']} · hoje {HOJE}")
-print(f"(a previsão venceu — a resposta PRECISA reconhecer o atraso)\n")
+print("(a previsão venceu — a resposta PRECISA reconhecer o atraso)\n")
 print("=" * 78 + "\n")
 
 a = rodar("A) avaliador VAGO — 'avalie se está bom'", avaliador_vago)

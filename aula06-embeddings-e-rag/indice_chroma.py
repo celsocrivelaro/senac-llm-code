@@ -9,10 +9,10 @@
 # reconstruir o índice a cada execução custa uma chamada de embedding sobre
 # o corpus inteiro, toda vez.
 #
-# Repare no que o Chroma NÃO faz: ele não embute nada. Os vetores são
-# calculados aqui, pelo mesmo `embedding.py` de sempre, e entregues prontos.
-# Manter isso visível evita que o banco introduza um segundo modelo de
-# embedding sem ninguém perceber.
+# O Chroma não embute nada. Os vetores são calculados aqui, pelo mesmo
+# `embedding.py` das demais aulas, e entregues prontos. Manter o cálculo
+# fora do banco impede que ele passe a usar um segundo modelo de embedding
+# sem que a mudança apareça no código.
 
 from pathlib import Path
 

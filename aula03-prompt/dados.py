@@ -3,9 +3,9 @@
 #
 # Por que um módulo em vez de repetir em cada arquivo: este é o conjunto de
 # teste da aula, e conjunto de teste é ATIVO (aula 02, nota 04, §7). Ele fica
-# num lugar só para que os experimentos comparem exatamente a mesma coisa —
-# se cada script tivesse a sua cópia, uma edição em um deles invalidaria a
-# comparação com os outros sem ninguém perceber.
+# num lugar só para que os experimentos comparem exatamente a mesma coisa.
+# Com uma cópia por script, uma edição em qualquer um deles invalidaria a
+# comparação com os demais, e a divergência não produziria erro.
 
 # As 5 categorias possíveis. Vira `enum` no schema (aula 02, nota 02, §7.2).
 CATEGORIAS = ["entrega_atrasada", "endereco_errado", "produto_avariado",
@@ -48,7 +48,7 @@ TESTE = [
 
 # Exemplos para o few-shot — NÃO são do conjunto de teste.
 #
-# Repare em três decisões, todas justificadas pelo Min et al. (nota 01, §6.2):
+# Três decisões, todas justificadas pelo Min et al. (nota 01, §6.2):
 #   1. cobrem as 5 categorias (o espaço de rótulos importa mais que a
 #      quantidade de exemplos);
 #   2. são mensagens com cara de mensagem real, com erro de digitação —

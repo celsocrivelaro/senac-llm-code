@@ -37,7 +37,7 @@ def chamar(**parametros):
     return escolha.message.content, escolha.finish_reason, resposta.usage
 
 
-print("### Parte 1 — provocando o truncamento de propósito\n")
+print("### Parte 1 — o truncamento, provocado em três limites\n")
 for limite in [20, 80, 400]:
     texto, motivo, uso = chamar(max_tokens=limite)
     marca = "  <-- TRUNCOU" if motivo == "length" else ""
@@ -57,7 +57,7 @@ if motivo == "length":
 
 print("### Parte 3 — stop: cortar a geração numa marca sua\n")
 # A sequência de parada NÃO aparece na saída — o modelo para antes dela.
-# Serve para delimitar formatos e para economizar tokens de saída (você paga
+# Serve para delimitar formatos e para economizar tokens de saída (paga-se
 # por token gerado, então parar cedo é dinheiro).
 resposta = client.chat.completions.create(
     model=MODELO,
@@ -74,8 +74,8 @@ print(f"finish_reason={escolha.finish_reason!r} "
       f"| tokens de saída={resposta.usage.completion_tokens}")
 print(escolha.message.content)
 print(
-    "\nRepare: paramos no '3.' e pagamos só pelos tokens até ali.\n"
+    "\nA geração parou no '3.', e o custo é só dos tokens até ali.\n"
     "Em um provedor que devolve finish_reason='stop' para sequência de\n"
-    "parada, você não consegue distinguir 'terminou' de 'bati no stop' —\n"
+    "parada, não há como distinguir 'terminou' de 'bati no stop' —\n"
     "outro detalhe que varia por provedor e precisa ser conferido."
 )

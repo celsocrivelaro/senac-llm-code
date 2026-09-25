@@ -1,5 +1,5 @@
 # Aula 05 — Arquitetura de agentes
-# 04 — AS QUATRO FORMAS DE TERMINAR, disparadas de propósito.
+# 04 — AS QUATRO FORMAS DE TERMINAR, cada uma disparada por construção.
 #
 # Um agente termina de exatamente quatro maneiras. No laço da aula 03, a
 # primeira era `return`, a segunda era `raise RuntimeError`, a terceira
@@ -74,17 +74,16 @@ print("   reformularia o argumento educadamente quatro vezes, contra uma")
 print("   parede, até o orçamento acabar.")
 
 # --------------------------------------------------------------- 4. HUMANO
-cabecalho(4, "HUMANO", "ação de escrita: o agente para, grava e devolve o controle")
+cabecalho(4, "HUMANO", "ação de escrita: o agente para e devolve o controle")
 e4 = rodar("O pedido 48219 está atrasado. Abra um chamado de entrega "
            "atrasada para ele.",
            orcamento=Orcamento(max_passos=8), fase="tudo",
            exige_confirmacao={"abrir_chamado"})
 print(f"\n   {resumo(e4)}")
-print(f"   pendência gravada: {e4.pendencia}")
-print(f"   checkpoint: checkpoints/{e4.execucao_id}.json")
+print(f"   pendência registrada: {e4.pendencia}")
 print("   note: NÃO houve input() no meio do laço. A confirmação é uma FORMA")
-print("   DE TERMINAR — o estado foi gravado e a aprovação pode chegar amanhã,")
-print("   por outro processo, sem repetir nenhum passo já dado.")
+print("   DE TERMINAR — o agente para, marca o que ficou pendente e devolve")
+print("   o controle, em vez de prender o processo esperando alguém.")
 
 # ------------------------------------------------------------------ resumo
 print(f"\n{LINHA}")

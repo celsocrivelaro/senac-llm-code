@@ -40,7 +40,7 @@ for modelo in sorted(resposta.data, key=lambda m: m.id):
     print(f"{modelo.id:<34} {contexto:>10}  {ativas}")
 
 print(
-    "\nRepare em três coisas:\n"
+    "\nTrês pontos a observar no catálogo:\n"
     "  1. Os aliases terminados em '-latest' apontam para uma versão que MUDA.\n"
     "     Em produção, fixe a versão datada; em aula, o alias é conveniente.\n"
     "  2. 'function_calling' é a capacidade que a aula 03 vai usar. Nem todo\n"

@@ -4,9 +4,9 @@
 # vai chegar ao leitor sem o texto em volta. Portanto precisa fazer sentido
 # SOZINHO — e é esse o único critério que separa as três estratégias abaixo.
 #
-# As três moram no mesmo arquivo de propósito, porque a aula não ensina
-# nenhuma delas isoladamente: ensina a COMPARAÇÃO entre elas. Lidas lado a
-# lado, a diferença fica visível antes mesmo de medir.
+# As três residem no mesmo arquivo porque o objeto de estudo é a COMPARAÇÃO
+# entre elas, e não cada uma isoladamente. Lidas lado a lado, a diferença de
+# critério de corte é visível antes da medição.
 #
 # O `02-chunking.py` roda as três e mede `recall@k`. O `03-buscador.py` usa
 # só a vencedora. Nenhuma das três chama a API — chunking é manipulação de

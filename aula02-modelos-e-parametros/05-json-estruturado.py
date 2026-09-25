@@ -30,7 +30,7 @@ client = OpenAI(
 
 MODELO = os.environ.get("LLM_MODELO", "mistral-small-latest")
 TENTATIVAS = 6
-TEMPERATURA = 0.7      # alta de propósito: queremos ver o formato quebrar
+TEMPERATURA = 0.7      # alta deliberadamente: é o que expõe a quebra de formato
 PAUSA = 0.4
 
 TEXTO = (

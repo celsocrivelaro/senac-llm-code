@@ -9,12 +9,12 @@
 #      é o único texto que o modelo lê para decidir COMO SE CORRIGIR.
 #
 #   2. O detector de laço é a rede de segurança para quando (1) não bastar.
-#      Repare, no fim: com um erro bem escrito, o detector NEM DISPARA.
-#      A maior parte do ganho está em não precisar dele.
+#      Com um erro bem escrito, o detector não chega a disparar: a maior
+#      parte do ganho está em não precisar dele.
 #
-# SUGESTÃO DE USO EM SALA: rode primeiro só a parte A, com o detector
-# desligado, e peça à turma que preveja quantos passos o agente vai dar.
-# Deixe o contador de passos e de tokens na tela até bater o teto.
+# A parte A roda com o detector desligado, e o contador de passos e de
+# tokens sobe até o teto do orçamento. É a condição que torna o ganho da
+# parte B mensurável.
 #
 # O QUE LEVAR DAQUI, depois de rodar:
 #
@@ -71,8 +71,8 @@ original = agente.consultar_cliente
 
 
 def cliente_erro_inutil(cliente_id: str) -> dict:
-    """A versão que quase todo mundo escreve sem pensar. Verdadeira e sem
-    ação possível: o modelo não sabe o que fazer com isto."""
+    """A forma mais frequente de mensagem de erro: verdadeira e sem ação
+    possível. Não informa ao modelo o que fazer em seguida."""
     if cliente_id not in CLIENTES:
         raise ErroRecuperavel("não encontrado")
     return {"id": cliente_id, **CLIENTES[cliente_id]}
