@@ -221,6 +221,7 @@ __marimo__/
 benchmark.csv
 aula05-agentes/checkpoints/
 aula08-memoria/memoria_db/
+aula08-memoria/checkpoints/
 
 # Índices vetoriais criados em tempo de execução (Chroma, aula 07)
 # Sem prefixo de pasta de propósito: o laboratório muda de nome e a regra
