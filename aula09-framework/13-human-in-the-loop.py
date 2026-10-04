@@ -4,8 +4,13 @@
 #
 # `interrupt()` suspende a execução DENTRO de um nó, devolve um valor a quem
 # chamou e espera. A retomada é um novo `invoke`, com `Command(resume=...)`, e
-# o valor passado vira o retorno do `interrupt()` lá dentro — a função continua
-# da linha seguinte, como se nunca tivesse parado.
+# o valor passado vira o retorno do `interrupt()` lá dentro.
+#
+# Atenção: a retomada NÃO continua da linha seguinte. O LangGraph roda o nó
+# inteiro DE NOVO, desde o começo; na segunda passada, o `interrupt()` não
+# para — devolve direto o valor do `resume`. Consequência: tudo o que está
+# ANTES do `interrupt()` no nó executa duas vezes. Por isso nada com efeito
+# colateral vai antes dele — o envio, aqui, só acontece depois.
 #
 # O que torna isso possível é o CHECKPOINTER: a pausa é um checkpoint gravado.
 # Por isso aqui ele é `SqliteSaver`, com arquivo em disco — o programa pode
@@ -71,7 +76,7 @@ def enviar_email(para: str, assunto: str, corpo: str) -> str:
         }
     )
 
-    # Daqui para baixo só roda DEPOIS do Command(resume=...).
+    # Daqui para baixo só roda na passada que vem DEPOIS do Command(resume=...).
     if decisao.get("acao") != "aprovar":
         return "Envio cancelado pelo usuário."
 
@@ -141,12 +146,17 @@ print("\n  APROVAÇÃO NECESSÁRIA")
 for chave, valor in pendente.items():
     print(f"    {chave}: {valor}")
 
-# 2. Retomada: o valor abaixo vira o retorno do `interrupt()` dentro da
-#    ferramenta, que continua de onde parou. Aqui a pessoa aprova E corrige o
-#    assunto — trocar por {"acao": "cancelar"} mostra o outro caminho.
-saida = grafo.invoke(
-    Command(resume={"acao": "aprovar", "assunto": "Reunião de amanhã — confirmando"}),
-    config,
-)
+# 2. O humano no laço: o programa está parado esperando uma pessoa decidir.
+#    Aprovar com um assunto novo é aprovar-editando.
+if input("\n  Aprova? [s/n] ").strip().lower() == "s":
+    decisao = {"acao": "aprovar"}
+    novo_assunto = input("  Novo assunto (Enter mantém o atual): ").strip()
+    if novo_assunto:
+        decisao["assunto"] = novo_assunto
+else:
+    decisao = {"acao": "cancelar"}
+
+# 3. Retomada: `decisao` vira o retorno do `interrupt()` dentro da ferramenta.
+saida = grafo.invoke(Command(resume=decisao), config)
 
 saida["mensagens"][-1].pretty_print()
