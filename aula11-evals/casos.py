@@ -15,23 +15,6 @@ import json
 VERSAO_DATASET = "1.2.0"
 VERSAO_RUBRICA = "1.1.0"
 
-POLITICA = {
-    "refeicao":   {"teto": 120.00, "artigo": "art-7",  "exige_nota": True},
-    "transporte": {"teto": 250.00, "artigo": "art-23", "exige_nota": True},
-    "hospedagem": {"teto": 480.00, "artigo": "art-12", "exige_nota": True},
-    "outros":     {"teto":  90.00, "artigo": None,     "exige_nota": True},
-}
-
-DESPESAS = {
-    "D-4612": {"categoria": "refeicao",   "valor": 138.00, "cidade": "Sao Paulo", "internacional": False},
-    "D-4613": {"categoria": "hospedagem", "valor": 590.00, "cidade": "Lisboa",    "internacional": True},
-    "D-4614": {"categoria": "transporte", "valor":  96.00, "cidade": "Sao Paulo", "internacional": False},
-    "D-4615": {"categoria": "refeicao",   "valor":  84.00, "cidade": "Campinas",  "internacional": False},
-    "D-4616": {"categoria": "outros",     "valor": 210.00, "cidade": "Campinas",  "internacional": False},
-    "D-4617": {"categoria": "hospedagem", "valor": 610.00, "cidade": "Recife",    "internacional": False},
-    "D-4618": {"categoria": "hospedagem", "valor": 600.00, "cidade": "Brasilia",  "internacional": False},
-}
-
 REGULAMENTO = {
     "art-7":  "Art. 7º O reembolso de despesa com refeição observará o teto de R$ 120,00 por refeição, mediante nota fiscal.",
     "art-12": "Art. 12. A diária de hospedagem observará o teto de R$ 480,00. § 1º Nas capitais de Estado, o teto é de R$ 620,00.",

@@ -11,13 +11,7 @@
 #
 #     python 01-tool-unit-tests.py          # não chama modelo
 
-import json
-
 from ferramentas import consultar_despesa, consultar_politica, registrar_parecer
-
-
-def chamar(funcao, **args):
-    return json.loads(funcao(**args))
 
 
 def teste(nome, ok):
@@ -25,14 +19,14 @@ def teste(nome, ok):
 
 
 print("\nCASOS DE ACERTO")
-teste("despesa D-4612 custa 138", chamar(consultar_despesa, despesa="D-4612")["valor"] == 138.0)
-teste("teto de refeição é 120", chamar(consultar_politica, categoria="refeicao")["teto"] == 120.0)
-teste("parecer registrado como reprovado", chamar(registrar_parecer, despesa="D-4612", veredito="reprovado", chave="k1")["veredito"] == "reprovado")
+teste("despesa D-4612 custa 138", consultar_despesa(despesa="D-4612")["valor"] == 138.0)
+teste("teto de refeição é 120", consultar_politica(categoria="refeicao")["teto"] == 120.0)
+teste("parecer registrado como reprovado", registrar_parecer(despesa="D-4612", veredito="reprovado", chave="k1")["veredito"] == "reprovado")
 
 print("\nCASOS DE ERRO — a resposta diz o que recebeu?")
-teste("despesa 'D4612', sem hífen", "recebido" in chamar(consultar_despesa, despesa="D4612"))
-teste("categoria 'almoço'", "recebido" in chamar(consultar_politica, categoria="almoço"))
-teste("veredito 'negado'", "recebido" in chamar(registrar_parecer, despesa="D-4612", veredito="negado", chave="k2"))
+teste("despesa 'D4612', sem hífen", "recebido" in consultar_despesa(despesa="D4612"))
+teste("categoria 'almoço'", "recebido" in consultar_politica(categoria="almoço"))
+teste("veredito 'negado'", "recebido" in registrar_parecer(despesa="D-4612", veredito="negado", chave="k2"))
 
 print("\nO que o modelo recebeu no ticket #355:")
 print(" ", consultar_despesa("D4612"))
