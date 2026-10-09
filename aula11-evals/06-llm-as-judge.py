@@ -64,10 +64,11 @@ for r in consenso:
     if r["id"] not in resultado["desacordos"]:
         continue
     v = vereditos[r["id"]]
-    print(f"\n  {r['id']}  humano={'FIEL' if r['humano_a'] else 'NÃO FIEL'}  juiz={'FIEL' if v.fiel else 'NÃO FIEL'}")
+    juiz_disse = "sem veredito" if v is None else "FIEL" if v.fiel else "NÃO FIEL"
+    print(f"\n  {r['id']}  humano={'FIEL' if r['humano_a'] else 'NÃO FIEL'}  juiz={juiz_disse}")
     print(f"        {r['resposta']}")
     print(f"        gabarito: {r['nota']}")
-    if v.afirmacao_nao_sustentada:
+    if v and v.afirmacao_nao_sustentada:
         print(f"        o juiz apontou: {v.afirmacao_nao_sustentada}")
 if not resultado["desacordos"]:
     print("\n  nenhum")

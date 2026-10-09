@@ -4,10 +4,6 @@
 # o caso 09 refaz duas delas com `agentevals` e `openevals`, e o que a
 # biblioteca faz fica visível ao lado da versão curta.
 
-from __future__ import annotations
-
-
-
 # ------------------------------------------------------- determinístico
 
 def extrair_veredito(resposta: str) -> str | None:
@@ -36,8 +32,13 @@ def nivel_deterministico(trace, caso: dict) -> dict:
 # ------------------------------------------------------------ trajetória
 
 def e_subsequencia(esperado: list[str], obtido: list[str]) -> bool:
-    it = iter(obtido)
-    return all(f in it for f in esperado)
+    """As esperadas aparecem em `obtido` nesta ordem, com outras no meio
+    ou não. ["a", "c"] é subsequência de ["a", "b", "c"]."""
+    proxima = 0
+    for f in obtido:
+        if proxima < len(esperado) and f == esperado[proxima]:
+            proxima += 1
+    return proxima == len(esperado)
 
 
 def nivel_trajetoria(trace, caso: dict) -> dict:
@@ -59,9 +60,7 @@ def nivel_resultado(antes: dict, depois: dict, caso: dict) -> dict:
     criados = len([k for k in depois if k not in antes])
     esperados = caso["esperado"]["pareceres_criados"]
     return {"criados": criados, "esperados": esperados,
-            "correto": criados == esperados,
-            "duplicado": criados > esperados,
-            "ausente": criados < esperados}
+            "correto": criados == esperados}
 
 
 def passou(r: dict) -> bool:
@@ -77,23 +76,22 @@ def passou(r: dict) -> bool:
 def concordancia(pares: list[tuple]) -> dict:
     """`pares` = [(id, referência, avaliado), ...] com valores booleanos.
 
-    Serve a humano x humano (05) e a juiz x humano (06, 09). `None` no
-    avaliado — juiz que não devolveu veredito — fica fora da matriz e é
-    contado à parte."""
+    Serve a humano x humano (05) e a juiz x humano (06, 09). Juiz que não
+    devolveu veredito (`None`) conta como desacordo."""
     matriz = {"vp": 0, "fp": 0, "vn": 0, "fn": 0}
-    desacordos, sem_veredito = [], []
+    desacordos = []
     for id_, ref, aval in pares:
         if aval is None:
-            sem_veredito.append(id_)
+            desacordos.append(id_)
             continue
         chave = ("v" if ref == aval else "f") + ("p" if aval else "n")
         matriz[chave] += 1
         if ref != aval:
             desacordos.append(id_)
-    total = sum(matriz.values())
+    total = len(pares)
     return {"matriz": matriz, "total": total,
             "taxa": (matriz["vp"] + matriz["vn"]) / total if total else 0.0,
-            "desacordos": desacordos, "sem_veredito": sem_veredito}
+            "desacordos": desacordos}
 
 
 def imprimir_matriz(c: dict, ref: str, aval: str) -> None:
@@ -101,7 +99,6 @@ def imprimir_matriz(c: dict, ref: str, aval: str) -> None:
     print(f"                    {ref}: FIEL   {ref}: NÃO FIEL")
     print(f"  {aval + ': FIEL':<18} {m['vp']:>8} {m['fp']:>14}")
     print(f"  {aval + ': NÃO FIEL':<18} {m['fn']:>8} {m['vn']:>14}")
-    print(f"\n  concordância {m['vp'] + m['vn']}/{c['total']} ({c['taxa']:.0%})"
-          + (f"   sem veredito: {c['sem_veredito']}" if c["sem_veredito"] else ""))
+    print(f"\n  concordância {m['vp'] + m['vn']}/{c['total']} ({c['taxa']:.0%})")
 
 

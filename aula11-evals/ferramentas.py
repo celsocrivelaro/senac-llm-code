@@ -66,16 +66,19 @@ def buscar_regulamento(consulta: str) -> dict | list[dict]:
     Args:
         consulta: O que procurar no regulamento
     """
-    termos = set(consulta.lower().split())
-    resultados = [{"artigo": a, "texto": t,
-                   "distancia": 1 - len(termos & set(t.lower().split())) / max(len(termos), 1)}
-                  for a, t in REGULAMENTO.items()]
-    resultados.sort(key=lambda d: d["distancia"])
-    resultados = resultados[:3]
-    if not resultados or resultados[0]["distancia"] > 0.6:   # portão da aula 07
+    termos = set(consulta.lower().replace("?", "").split())
+    achados = []
+    for artigo, texto in REGULAMENTO.items():
+        palavras = set(texto.lower().replace(",", "").replace(".", "").split())
+        # que fração das palavras da consulta aparece no artigo
+        cobertura = len(termos & palavras) / max(len(termos), 1)
+        if cobertura >= 0.4:   # portão da aula 07
+            achados.append({"artigo": artigo, "texto": texto, "cobertura": round(cobertura, 2)})
+    if not achados:
         return {"recusa": "nada recuperado acima do limiar",
                 "sugestao": "reformule com termos do regulamento, ou recuse"}
-    return resultados
+    achados.sort(key=lambda a: a["cobertura"], reverse=True)
+    return achados[:3]
 
 
 def registrar_parecer(despesa: str, veredito: str, chave: str) -> dict:

@@ -33,7 +33,7 @@ for i in range(N):
     trace = rodar(CASO["entrada"])
     vereditos.append(extrair_veredito(trace.resposta))
     trajetorias.append(" -> ".join(p["ferramenta"] for p in trace.passos) or "(nenhuma)")
-    print(f"  {i + 1:>2}/{N}  {str(vereditos[-1]):<10} {len(trace.passos)} passos  {trace.tokens} tokens")
+    print(f"  {i + 1:>2}/{N}  {str(vereditos[-1]):<10} {len(trace.passos)} passos")
 
 acertos = vereditos.count(ESPERADO)
 

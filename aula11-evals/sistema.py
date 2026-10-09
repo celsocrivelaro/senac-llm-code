@@ -7,8 +7,6 @@
 #     rodar(entrada) -> Trace       uma execução, com o caminho percorrido
 #     PARECERES                     o "mundo": o que o agente já escreveu
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 from langchain.agents import create_agent
@@ -48,62 +46,43 @@ FONTES = {"consultar_politica", "buscar_regulamento"}
 @dataclass
 class Trace:
     """O trace da aula 05: o caminho, não só a resposta."""
-    passos: list[dict] = field(default_factory=list)
-    contexto: list[str] = field(default_factory=list)
-    resposta: str = ""
-    termino: str = ""
-    tokens: int = 0
-    mensagens: list = field(default_factory=list)
+    passos: list[dict] = field(default_factory=list)    # cada chamada de ferramenta
+    contexto: list[str] = field(default_factory=list)   # o que as FONTES devolveram
+    resposta: str = ""                                  # o texto final do agente
 
 
 def trace_das_mensagens(mensagens: list) -> Trace:
     """Remonta o trace a partir da conversa que o agente devolve.
 
-    Aceita mensagens do LangChain ou dicionários no formato da OpenAI — é
-    assim que os traces GRAVADOS de `casos.py` passam pelo mesmo caminho."""
+    Aceita mensagens do LangChain ou dicionários — é assim que os traces
+    GRAVADOS de `casos.py` passam pelo mesmo caminho."""
     mensagens = convert_to_messages(mensagens)
-    trace = Trace(mensagens=mensagens)
     saidas = {m.tool_call_id: m.text for m in mensagens if m.type == "tool"}
+    trace = Trace()
 
     for m in mensagens:
         if m.type != "ai":
             continue
-        trace.tokens += (m.usage_metadata or {}).get("total_tokens", 0)
         for chamada in m.tool_calls:
             saida = saidas.get(chamada["id"], "")
             erro = '"erro"' in saida or saida.startswith("Error")
-            trace.passos.append({"ferramenta": chamada["name"],
-                                 "argumentos": chamada["args"],
-                                 "saida": saida, "erro": erro})
+            trace.passos.append({"ferramenta": chamada["name"], "saida": saida, "erro": erro})
             if chamada["name"] in FONTES and not erro:
                 trace.contexto.append(saida)
 
-    ultima = mensagens[-1] if mensagens else None
-    if ultima is not None and ultima.type == "ai" and not ultima.tool_calls:
-        trace.termino, trace.resposta = "respondeu", ultima.text
+    if mensagens and mensagens[-1].type == "ai":
+        trace.resposta = mensagens[-1].text
     return trace
 
 
-def rodar(entrada: str, versao_prompt: str = SYSTEM,
-          max_passos: int = 6) -> Trace:
-    """Uma execução do agente. Um agente por chamada, porque o prompt de
-    sistema é o que o caso 08 compara entre versões."""
-    agente = create_agent(model=sistema, tools=FERRAMENTAS,
-                          system_prompt=versao_prompt)
-
-    # O orçamento de passos da aula 05 vira `recursion_limit`: cada passo
-    # são dois nós (modelo e ferramentas), mais a resposta final. `stream`
-    # guarda o último estado — com `invoke`, o orçamento estourado levaria
-    # o trace junto com a exceção.
-    estado = {"messages": []}
+def rodar(entrada: str, prompt: str = SYSTEM) -> Trace:
+    """Uma execução do agente. O prompt é parâmetro porque o caso 08
+    compara duas versões dele."""
+    agente = create_agent(model=sistema, tools=FERRAMENTAS, system_prompt=prompt)
     try:
-        for estado in agente.stream(
-                {"messages": [{"role": "user", "content": entrada}]},
-                {"recursion_limit": 2 * max_passos + 1},
-                stream_mode="values"):
-            pass
+        # no máximo 6 passos: cada um são dois nós (modelo e ferramentas)
+        estado = agente.invoke({"messages": [{"role": "user", "content": entrada}]},
+                               {"recursion_limit": 13})
     except GraphRecursionError:
-        trace = trace_das_mensagens(estado["messages"])
-        trace.termino = "orcamento_esgotado"
-        return trace
+        return Trace()   # estourou os passos: sem resposta, conta como falha
     return trace_das_mensagens(estado["messages"])

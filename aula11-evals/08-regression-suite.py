@@ -17,12 +17,10 @@
 #
 #     python 08-regression-suite.py          # o caso mais caro: ver CUSTO
 
-import hashlib
-import statistics
 from collections import Counter
 
 from casos import CASOS, SYSTEM
-from metricas import nivel_deterministico, nivel_resultado, nivel_trajetoria, passou
+from metricas import nivel_deterministico, nivel_resultado, passou
 from sistema import MODELO, PARECERES, PROVEDOR, limpar_pareceres, rodar
 
 # CUSTO: execuções do agente = casos de desenvolvimento x REPETICOES x 3
@@ -35,26 +33,18 @@ PROMPT_B = SYSTEM + (
     "\n\nATENÇÃO: antes de comparar um valor com o teto, verifique se há exceção aplicável no regulamento — viagem internacional (art. 19) e capital (art. 12 §1) alteram os tetos. Use buscar_regulamento."
 )
 
-# A REGRA, declarada antes de rodar.
-REGRA = {
-    "ganho_minimo_acima_do_ruido": True,   # delta médio > ruído de base
-    "piora_maxima_por_fatia": 0.05,        # nenhuma classe cai mais que 5 pontos
-    "holdout_nao_pode_piorar": True,       # confirmação final, em casos nunca olhados
-}
+# A REGRA, declarada antes de rodar. B só sobe se:
+#   1. o ganho médio for maior que o ruído de base (A contra A);
+#   2. nenhuma classe cair mais que PIORA_MAXIMA;
+#   3. no holdout, B não for pior que A.
+PIORA_MAXIMA = 0.05
 
+# O HOLDOUT, escolhido uma vez e nunca mais trocado: estes casos ninguém
+# olha ao ajustar o prompt.
+HOLDOUT_IDS = ["C-003", "C-006", "C-007", "C-008", "C-012"]
 
-
-def particao(caso_id: str, fracao_holdout: float = 0.3) -> str:
-    """'holdout' ou 'desenvolvimento', decidido pelo hash do id.
-
-    `hash()` do Python muda a cada processo; o SHA-256 não. A divisão
-    precisa ser a mesma hoje e daqui a um mês, ou o holdout vaza."""
-    balde = int(hashlib.sha256(caso_id.encode()).hexdigest(), 16) % 100
-    return "holdout" if balde < fracao_holdout * 100 else "desenvolvimento"
-
-
-DESENVOLVIMENTO = [c for c in CASOS if particao(c["id"]) == "desenvolvimento"]
-HOLDOUT = [c for c in CASOS if particao(c["id"]) == "holdout"]
+DESENVOLVIMENTO = [c for c in CASOS if c["id"] not in HOLDOUT_IDS]
+HOLDOUT = [c for c in CASOS if c["id"] in HOLDOUT_IDS]
 
 
 def avaliar(caso: dict, prompt: str) -> dict:
@@ -63,20 +53,18 @@ def avaliar(caso: dict, prompt: str) -> dict:
     trace = rodar(caso["entrada"], prompt)
     return {"id": caso["id"], "classe": caso["classe"],
             "deterministico": nivel_deterministico(trace, caso),
-            "trajetoria": nivel_trajetoria(trace, caso),
             "resultado": nivel_resultado(antes, dict(PARECERES), caso)}
 
 
 def suite(casos: list[dict], prompt: str, repeticoes: int) -> dict:
-    execucoes = [[avaliar(c, prompt) for c in casos] for _ in range(repeticoes)]
-    taxas = [sum(passou(r) for r in e) / len(e) for e in execucoes]
-    por_classe: dict[str, list[bool]] = {}
-    for e in execucoes:
-        for r in e:
-            por_classe.setdefault(r["classe"], []).append(passou(r))
-    return {"taxa": statistics.fmean(taxas),
-            "por_classe": {k: sum(v) / len(v) for k, v in por_classe.items()},
-            "ultima": execucoes[-1]}
+    """Roda os casos `repeticoes` vezes e devolve a taxa de aprovação,
+    no total e por classe."""
+    resultados = [avaliar(c, prompt) for _ in range(repeticoes) for c in casos]
+    por_classe = {}
+    for r in resultados:
+        por_classe.setdefault(r["classe"], []).append(passou(r))
+    return {"taxa": sum(passou(r) for r in resultados) / len(resultados),
+            "por_classe": {k: sum(v) / len(v) for k, v in por_classe.items()}}
 
 
 print(f"[{PROVEDOR}:{MODELO}]")
@@ -99,7 +87,7 @@ print(f"  {'classe':<24} {'A':>6} {'A de novo':>10} {'B':>6} {'B - A':>7}")
 pioras = []
 for classe in sorted(a["por_classe"]):
     ta, ta2, tb = a["por_classe"][classe], a2["por_classe"][classe], b["por_classe"][classe]
-    if tb < ta - REGRA["piora_maxima_por_fatia"]:
+    if tb < ta - PIORA_MAXIMA:
         pioras.append(classe)
     print(f"  {classe:<24} {ta:>6.0%} {ta2:>10.0%} {tb:>6.0%} {(tb - ta) * 100:>+6.0f}"
           + ("   <- PIOROU" if classe in pioras else ""))
@@ -123,9 +111,3 @@ else:
 
 print(f"\n  VEREDITO: {'PROMOVER B' if promove else 'MANTER A'}")
 
-print("\n4 — O QUE FALHOU EM B")
-for r in b["ultima"]:
-    if not passou(r):
-        print(f"  {r['id']} [{r['classe']}]  veredito {r['deterministico']['veredito_obtido']}"
-              f"  citação {'ok' if r['deterministico']['citacao_verificavel'] else 'FALTOU'}"
-              f"  pareceres {r['resultado']['criados']}/{r['resultado']['esperados']}")

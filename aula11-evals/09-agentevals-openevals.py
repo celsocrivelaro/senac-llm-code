@@ -7,7 +7,7 @@
 #
 # As técnicas dos casos 04 e 06, refeitas com as bibliotecas do
 # ecossistema LangChain. É o último degrau da escada da aula 10: à mão,
-# depois a dependência — e o aluno consegue dizer o que sumiu.
+# depois a dependência, e com o que sumiu à vista.
 #
 # O CASO: a equipe quer parar de manter `metricas.py`. Antes de trocar,
 # roda as bibliotecas sobre os MESMOS traces gravados (caso 04) e os MESMOS
@@ -19,17 +19,11 @@ from agentevals.trajectory.match import create_trajectory_match_evaluator
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
 
-from casos import CASOS, ROTULOS_FIDELIDADE, TRACES_GRAVADOS, chamada
+from casos import CASOS, ROTULOS_FIDELIDADE, TRACES_GRAVADOS
 from cliente import MODELO, PROVEDOR, juiz
 from metricas import concordancia, imprimir_matriz
 
 CASOS_POR_ID = {c["id"]: c for c in CASOS}
-
-
-def referencia(ferramentas: list[str]) -> list[dict]:
-    """A trajetória esperada de um caso, no formato de mensagens."""
-    return [{"role": "assistant", "content": "",
-             "tool_calls": [chamada(f"r{i}", nome) for i, nome in enumerate(ferramentas)]}]
 
 
 # ============================================ 1. trajetória (agentevals)
@@ -38,13 +32,13 @@ def referencia(ferramentas: list[str]) -> list[dict]:
 # vezes.
 OUTRO_CAMINHO = [
     {"role": "user", "content": CASOS_POR_ID["C-005"]["entrada"]},
-    {"role": "assistant", "content": "", "tool_calls": [chamada("o1", "buscar_regulamento", consulta="viagem internacional hospedagem")]},
+    {"role": "assistant", "content": "", "tool_calls": [{"id": "o1", "name": "buscar_regulamento", "args": {"consulta": "viagem internacional hospedagem"}}]},
     {"role": "tool", "tool_call_id": "o1", "content": "[art-19 ...]"},
-    {"role": "assistant", "content": "", "tool_calls": [chamada("o2", "consultar_despesa", despesa="D-4613"),
-                                                       chamada("o3", "consultar_politica", categoria="hospedagem")]},
+    {"role": "assistant", "content": "", "tool_calls": [{"id": "o2", "name": "consultar_despesa", "args": {"despesa": "D-4613"}},
+                                                       {"id": "o3", "name": "consultar_politica", "args": {"categoria": "hospedagem"}}]},
     {"role": "tool", "tool_call_id": "o2", "content": "{...}"},
     {"role": "tool", "tool_call_id": "o3", "content": "{...}"},
-    {"role": "assistant", "content": "", "tool_calls": [chamada("o4", "consultar_despesa", despesa="D-4613")]},
+    {"role": "assistant", "content": "", "tool_calls": [{"id": "o4", "name": "consultar_despesa", "args": {"despesa": "D-4613"}}]},
     {"role": "tool", "tool_call_id": "o4", "content": "{...}"},
     {"role": "assistant", "content": "Com o acréscimo de 60% do art. 19, o teto é R$ 768. Veredito: aprovado."},
 ]
@@ -58,7 +52,10 @@ modos = {m: create_trajectory_match_evaluator(trajectory_match_mode=m, tool_args
 print("1 — TRAJETÓRIA COM agentevals (argumentos ignorados)\n")
 print(f"  {'trajetória':<24} {'caso':<6} {'strict':>8} {'superset':>9}")
 for nome, caso_id, mensagens in TRAJETORIAS:
-    ref = referencia(CASOS_POR_ID[caso_id]["esperado"]["ferramentas"])
+    # a trajetória esperada, no formato de mensagens: uma chamada por ferramenta
+    esperadas = CASOS_POR_ID[caso_id]["esperado"]["ferramentas"]
+    ref = [{"role": "assistant", "content": "",
+            "tool_calls": [{"id": f, "name": f, "args": {}} for f in esperadas]}]
     notas = {m: avaliador(outputs=mensagens, reference_outputs=ref)["score"] for m, avaliador in modos.items()}
     print(f"  {nome:<24} {caso_id:<6} {'ok' if notas['strict'] else 'FALHA':>8} {'ok' if notas['superset'] else 'FALHA':>9}")
 
