@@ -10,11 +10,8 @@
 #
 #     python 02-golden-set.py          # não chama modelo
 
-from collections import Counter
-
 from casos import CASOS
 
-OBRIGATORIOS = {"id", "origem", "classe", "entrada", "esperado", "por_que_existe"}
 ORIGENS = {"producao", "desenvolvimento", "sintetico"}
 
 # ------------------------------------------------------ 1. o ticket vira caso
@@ -39,20 +36,19 @@ conjunto = CASOS + [novo]
 
 
 def problemas(casos: list[dict]) -> list[str]:
+    """As quatro regras de composição do conjunto."""
     achados = []
-    ids = Counter(c["id"] for c in casos)
-    achados += [f"{i}: id repetido" for i, n in ids.items() if n > 1]
     for c in casos:
-        if faltando := OBRIGATORIOS - set(c):
-            achados.append(f"{c['id']}: faltam {sorted(faltando)}")
-        if c["origem"] not in ORIGENS:
-            achados.append(f"{c['id']}: origem inválida {c['origem']!r}")
-        if c["origem"] == "sintetico" and not c.get("revisor"):
+        # 1. todo caso declara de onde veio
+        if c.get("origem") not in ORIGENS:
+            achados.append(f"{c['id']}: origem não declarada")
+        # 2. caso sintético só entra revisado por alguém
+        if c.get("origem") == "sintetico" and not c.get("revisor"):
             achados.append(f"{c['id']}: sintético SEM revisor")
-        if c["origem"] == "producao" and not c.get("incidente"):
-            achados.append(f"{c['id']}: produção sem incidente de origem")
+    # 3. há ao menos um caso em que a resposta certa é recusar
     if not any(c["esperado"]["veredito"] == "recusa" for c in casos):
         achados.append("conjunto sem caso de recusa")
+    # 4. há classes suficientes para ler o resultado por fatia
     if len({c["classe"] for c in casos}) < 3:
         achados.append("menos de três classes: não há leitura por fatia")
     return achados

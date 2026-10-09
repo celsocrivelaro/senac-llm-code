@@ -70,36 +70,35 @@ class Preferencia(BaseModel):
 juiz_pares = sistema.with_structured_output(Preferencia)
 
 
-def preferir(pergunta: str, r1: str, r2: str) -> str | None:
+def vencedora(pergunta: str, r1: str, r2: str) -> str | None:
+    """Pergunta ao juiz qual das duas respostas é melhor, e devolve o TEXTO
+    da escolhida — r1 ou r2 —, ou None se o juiz não respondeu."""
     try:
-        return juiz_pares.invoke(
+        escolha = juiz_pares.invoke(
             f"Política da loja: {POLITICA_LOJA}\n\nPergunta do cliente: {pergunta}\n\n"
             f"Resposta 1: {r1}\n\nResposta 2: {r2}\n\nQual resposta atende melhor o cliente?").melhor
     except Exception:
         return None
+    return r1 if escolha == "1" else r2
 
 
-def nas_duas_ordens(pergunta: str, x: str, y: str) -> tuple[str | None, str | None]:
-    """Quem venceu ('x' ou 'y') com x na posição 1, e depois com y na 1."""
-    p1 = preferir(pergunta, x, y)
-    p2 = preferir(pergunta, y, x)
-    return ({"1": "x", "2": "y"}.get(p1), {"1": "y", "2": "x"}.get(p2))
-
-
-def rotulo(v: str | None) -> str:
-    return {"x": "melhor", "y": "pior"}.get(v, "?")
+def venceu(ok: bool) -> str:
+    return "venceu" if ok else "perdeu"
 
 
 print("\n2 — POR PARES, NAS DUAS ORDENS (viés de posição)\n")
 inversoes, acertos = 0, 0
 for s in SITUACOES:
-    melhor, pior = s[f"resposta_{s['melhor']}"], s["resposta_b" if s["melhor"] == "a" else "resposta_a"]
-    v1, v2 = nas_duas_ordens(s["pergunta"], melhor, pior)
-    inverteu = v1 != v2
+    melhor = s[f"resposta_{s['melhor']}"]
+    pior = s["resposta_b" if s["melhor"] == "a" else "resposta_a"]
+    # A mesma pergunta duas vezes, trocando só a ordem das respostas.
+    melhor_em_1 = vencedora(s["pergunta"], melhor, pior) == melhor
+    melhor_em_2 = vencedora(s["pergunta"], pior, melhor) == melhor
+    inverteu = melhor_em_1 != melhor_em_2
     inversoes += inverteu
-    acertos += (v1 == "x") + (v2 == "x")
-    print(f"  {s['id']}  melhor na posição 1: {rotulo(v1)}"
-          f"   melhor na posição 2: {rotulo(v2)}"
+    acertos += melhor_em_1 + melhor_em_2
+    print(f"  {s['id']}  a melhor, na posição 1: {venceu(melhor_em_1)}"
+          f"   na posição 2: {venceu(melhor_em_2)}"
           + ("   <- INVERTEU" if inverteu else ""))
 print(f"\n  acerto: {acertos}/{2 * len(SITUACOES)}   inversões: {inversoes}/{len(SITUACOES)}")
 
@@ -109,10 +108,11 @@ print("\n3 — A MELHOR CONTRA A PIOR INFLADA (viés de comprimento)\n")
 vitorias_inflada = 0
 for s in SITUACOES:
     melhor = s[f"resposta_{s['melhor']}"]
-    v1, v2 = nas_duas_ordens(s["pergunta"], melhor, s["resposta_inflada"])
-    ganhou = [v1, v2].count("y")
+    inflada = s["resposta_inflada"]
+    ganhou = ((vencedora(s["pergunta"], melhor, inflada) == inflada)
+              + (vencedora(s["pergunta"], inflada, melhor) == inflada))
     vitorias_inflada += ganhou
-    print(f"  {s['id']}  {len(melhor):>4} contra {len(s['resposta_inflada']):>4} caracteres"
+    print(f"  {s['id']}  {len(melhor):>4} contra {len(inflada):>4} caracteres"
           f"   a inflada venceu {ganhou}/2")
 print(f"\n  a inflada venceu {vitorias_inflada}/{2 * len(SITUACOES)}   (compare com o item 2, onde a mesma resposta era curta)")
 

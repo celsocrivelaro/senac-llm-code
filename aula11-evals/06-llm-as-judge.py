@@ -11,22 +11,14 @@
 #
 #     python 06-llm-as-judge.py          # ~10 chamadas curtas ao modelo
 
-import os
-
 from pydantic import BaseModel, Field
 
 from casos import ROTULOS_FIDELIDADE, RUBRICA_FIDELIDADE, VERSAO_RUBRICA
+from cliente import MODELO, MODELO_JUIZ, PROVEDOR
+from cliente import juiz as modelo_juiz
 from metricas import concordancia, imprimir_matriz
-from sistema import MODELO, PROVEDOR, sistema
 
 LIMIAR = 0.85   # declarado antes de rodar
-
-# O juiz deveria ser de outra família que o sistema (viés de
-# auto-preferência). `LLM_MODELO_JUIZ` troca o modelo dentro do mesmo
-# provedor; a integração da Groq chama o campo de `model_name`.
-MODELO_JUIZ = os.environ.get("LLM_MODELO_JUIZ", MODELO)
-_campo = "model_name" if PROVEDOR == "groq" else "model"
-modelo_juiz = sistema.model_copy(update={_campo: MODELO_JUIZ})
 
 
 class Fidelidade(BaseModel):
@@ -72,14 +64,11 @@ for r in consenso:
     if r["id"] not in resultado["desacordos"]:
         continue
     v = vereditos[r["id"]]
-    hipotese = ("rubrica (reprovou o que é fiel: paráfrase?)" if r["humano_a"]
-                else "juiz (não viu número trocado ou negação?)")
     print(f"\n  {r['id']}  humano={'FIEL' if r['humano_a'] else 'NÃO FIEL'}  juiz={'FIEL' if v.fiel else 'NÃO FIEL'}")
     print(f"        {r['resposta']}")
     print(f"        gabarito: {r['nota']}")
     if v.afirmacao_nao_sustentada:
         print(f"        o juiz apontou: {v.afirmacao_nao_sustentada}")
-    print(f"        suspeita: {hipotese}")
 if not resultado["desacordos"]:
     print("\n  nenhum")
 

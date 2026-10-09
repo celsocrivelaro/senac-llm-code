@@ -59,3 +59,11 @@ elif PROVEDOR == "groq":
 
 else:
     raise ValueError(f"LLM_PROVEDOR inválido no .env: {PROVEDOR!r}. Use 'mistral', 'ollama' ou 'groq'.")
+
+# O JUIZ dos evals (casos 06 e 09). Deveria ser de outra família que o
+# sistema, por causa do viés de auto-preferência: `LLM_MODELO_JUIZ` troca o
+# modelo, dentro do mesmo provedor. A integração da Groq chama o campo de
+# `model_name`.
+MODELO_JUIZ = os.environ.get("LLM_MODELO_JUIZ", MODELO)
+juiz = modelo.model_copy(update={"model_name" if PROVEDOR == "groq" else "model": MODELO_JUIZ,
+                                 "temperature": 0})

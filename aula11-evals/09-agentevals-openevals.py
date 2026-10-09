@@ -19,9 +19,9 @@ from agentevals.trajectory.match import create_trajectory_match_evaluator
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
 
-from casos import CASOS, ROTULOS_FIDELIDADE, TRACES_GRAVADOS, _chamada
+from casos import CASOS, ROTULOS_FIDELIDADE, TRACES_GRAVADOS, chamada
+from cliente import MODELO, PROVEDOR, juiz
 from metricas import concordancia, imprimir_matriz
-from sistema import MODELO, PROVEDOR, sistema
 
 CASOS_POR_ID = {c["id"]: c for c in CASOS}
 
@@ -29,7 +29,7 @@ CASOS_POR_ID = {c["id"]: c for c in CASOS}
 def referencia(ferramentas: list[str]) -> list[dict]:
     """A trajetória esperada de um caso, no formato de mensagens."""
     return [{"role": "assistant", "content": "",
-             "tool_calls": [_chamada(f"r{i}", nome) for i, nome in enumerate(ferramentas)]}]
+             "tool_calls": [chamada(f"r{i}", nome) for i, nome in enumerate(ferramentas)]}]
 
 
 # ============================================ 1. trajetória (agentevals)
@@ -38,13 +38,13 @@ def referencia(ferramentas: list[str]) -> list[dict]:
 # vezes.
 OUTRO_CAMINHO = [
     {"role": "user", "content": CASOS_POR_ID["C-005"]["entrada"]},
-    {"role": "assistant", "content": "", "tool_calls": [_chamada("o1", "buscar_regulamento", consulta="viagem internacional hospedagem")]},
+    {"role": "assistant", "content": "", "tool_calls": [chamada("o1", "buscar_regulamento", consulta="viagem internacional hospedagem")]},
     {"role": "tool", "tool_call_id": "o1", "content": "[art-19 ...]"},
-    {"role": "assistant", "content": "", "tool_calls": [_chamada("o2", "consultar_despesa", despesa="D-4613"),
-                                                       _chamada("o3", "consultar_politica", categoria="hospedagem")]},
+    {"role": "assistant", "content": "", "tool_calls": [chamada("o2", "consultar_despesa", despesa="D-4613"),
+                                                       chamada("o3", "consultar_politica", categoria="hospedagem")]},
     {"role": "tool", "tool_call_id": "o2", "content": "{...}"},
     {"role": "tool", "tool_call_id": "o3", "content": "{...}"},
-    {"role": "assistant", "content": "", "tool_calls": [_chamada("o4", "consultar_despesa", despesa="D-4613")]},
+    {"role": "assistant", "content": "", "tool_calls": [chamada("o4", "consultar_despesa", despesa="D-4613")]},
     {"role": "tool", "tool_call_id": "o4", "content": "{...}"},
     {"role": "assistant", "content": "Com o acréscimo de 60% do art. 19, o teto é R$ 768. Veredito: aprovado."},
 ]
@@ -73,7 +73,7 @@ for nome, caso_id, mensagens in TRAJETORIAS:
 # A rubrica pronta de "groundedness" da biblioteca, com o modelo do
 # `cliente.py` como juiz. A pergunta é a do caso 06: ela concorda com os
 # humanos?
-avaliador = create_llm_as_judge(prompt=RAG_GROUNDEDNESS_PROMPT, judge=sistema,
+avaliador = create_llm_as_judge(prompt=RAG_GROUNDEDNESS_PROMPT, judge=juiz,
                                 feedback_key="fiel")
 
 

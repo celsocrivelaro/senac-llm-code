@@ -1,12 +1,11 @@
 # As métricas, escritas à mão. Nenhuma chama modelo.
 #
 # Estão aqui para que o mecanismo fique visível antes de virar dependência:
-# o caso 09 refaz duas delas com `agentevals` e `openevals`, e o aluno
-# consegue dizer o que a biblioteca faz porque já escreveu a versão curta.
+# o caso 09 refaz duas delas com `agentevals` e `openevals`, e o que a
+# biblioteca faz fica visível ao lado da versão curta.
 
 from __future__ import annotations
 
-import hashlib
 
 
 # ------------------------------------------------------- determinístico
@@ -73,17 +72,6 @@ def passou(r: dict) -> bool:
             and r["resultado"]["correto"])
 
 
-# ------------------------------------------------------------- repetição
-
-def pass_at_k(acertos: int, total: int) -> float:
-    return acertos / total if total else 0.0
-
-
-def pass_pow_k(acertos: int, total: int, k: int) -> float:
-    """Probabilidade de acertar as k vezes, supondo independência."""
-    return pass_at_k(acertos, total) ** k
-
-
 # ----------------------------------------------------------- concordância
 
 def concordancia(pares: list[tuple]) -> dict:
@@ -117,12 +105,3 @@ def imprimir_matriz(c: dict, ref: str, aval: str) -> None:
           + (f"   sem veredito: {c['sem_veredito']}" if c["sem_veredito"] else ""))
 
 
-# --------------------------------------------------------------- holdout
-
-def particao(caso_id: str, fracao_holdout: float = 0.3) -> str:
-    """'holdout' ou 'desenvolvimento', decidido pelo hash do id.
-
-    `hash()` do Python muda a cada processo; o SHA-256 não. A divisão
-    precisa ser a mesma hoje e daqui a um mês, ou o holdout vaza."""
-    balde = int(hashlib.sha256(caso_id.encode()).hexdigest(), 16) % 100
-    return "holdout" if balde < fracao_holdout * 100 else "desenvolvimento"

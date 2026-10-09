@@ -34,11 +34,12 @@ no ar e ficam para a aula 12; a 10 (*red team*) é a aula 13.
 
 | Arquivo | O que é |
 |---|---|
-| `sistema.py` | o agente sob teste — o `create_agent` da aula 09 com as quatro ferramentas de despesas — e o `Trace` remontado das mensagens |
+| `ferramentas.py` | as quatro ferramentas de despesas, como funções Python comuns — testáveis sem LangChain e sem modelo (`01`) |
+| `sistema.py` | o agente sob teste — o `create_agent` da aula 09 com as ferramentas do `ferramentas.py` — e o `Trace` remontado das mensagens |
 | `casos.py` | o *golden dataset*: casos com origem declarada, os traces gravados dos incidentes e os rótulos humanos de fidelidade (dois rotuladores) |
 | `atendimento.py` | o outro domínio: respostas de atendimento ao cliente, em pares, com versões infladas |
-| `metricas.py` | as métricas escritas à mão — veredito, trajetória, resultado, `pass^k`, concordância, holdout. Nenhuma chama modelo |
-| `cliente.py` | o modelo, escolhido por `LLM_PROVEDOR` no `.env` entre Mistral, Ollama e Groq. O mesmo das aulas 09 e 10 |
+| `metricas.py` | as métricas usadas por mais de um caso, escritas à mão — os três níveis (veredito, trajetória, resultado) e a concordância. Nenhuma chama modelo. As que um caso só usa (`pass^k` no `03`, o holdout no `08`) estão no próprio caso |
+| `cliente.py` | o modelo, escolhido por `LLM_PROVEDOR` no `.env` entre Mistral, Ollama e Groq, e o juiz dos casos `06` e `09` (`LLM_MODELO_JUIZ`). O mesmo das aulas 09 e 10 |
 
 ## À mão, depois a biblioteca
 

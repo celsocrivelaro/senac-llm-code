@@ -18,7 +18,7 @@
 from collections import Counter
 
 from casos import CASOS
-from metricas import extrair_veredito, pass_at_k, pass_pow_k
+from metricas import extrair_veredito
 from sistema import MODELO, PROVEDOR, rodar
 
 N = 20
@@ -46,9 +46,12 @@ print("\nTRAJETÓRIAS")
 for trajetoria, n in Counter(trajetorias).most_common():
     print(f"  {n:>3}x  {trajetoria}")
 
-print(f"\n  pass@1 = {pass_at_k(acertos, N):.2f}")
+# A taxa de acerto de uma execução é p. Acertar k vezes seguidas, supondo
+# execuções independentes, é p multiplicado por ele mesmo k vezes.
+p = acertos / N
+print(f"\n  pass@1 = {p:.2f}          acertos / {N}")
 for k in (3, 5, 8):
-    print(f"  pass^{k} = {pass_pow_k(acertos, N, k):.2f}")
+    print(f"  pass^{k} = {p ** k:.2f}          p ** {k}: as {k} execuções acertam")
 
 # Se houve variação, ela veio com temperature=0: o provedor (réplicas,
 # ponto flutuante, versão servida) não é controlável. O pass^5 acima é a

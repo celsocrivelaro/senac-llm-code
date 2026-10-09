@@ -24,18 +24,29 @@ from sistema import MODELO, PARECERES, PROVEDOR, limpar_pareceres, rodar, trace_
 CASOS_POR_ID = {c["id"]: c for c in CASOS}
 
 
+def sim_nao(ok: bool) -> str:
+    return "sim" if ok else "NÃO"
+
+
 def linha(nome: str, trace, caso: dict, antes: dict, depois: dict) -> None:
-    det = nivel_deterministico(trace, caso)
-    traj = nivel_trajetoria(trace, caso)
-    res = nivel_resultado(antes, depois, caso)
+    texto = nivel_deterministico(trace, caso)
+    caminho = nivel_trajetoria(trace, caso)
+    mundo = nivel_resultado(antes, depois, caso)
     print(f"\n  {nome}  ({caso['id']})")
-    print(f"    texto ....... veredito {det['veredito_obtido']!s:<10} {'ok' if det['veredito_correto'] else 'ERRADO'}")
-    print(f"    citação ..... {'verificável' if det['citacao_verificavel'] else 'NÃO está no que as ferramentas devolveram'}")
-    print(f"    trajetória .. {' -> '.join(traj['obtido']) or '(nenhuma)'}")
-    print(f"                  cobertura {traj['cobertura']:.0%}, ordem {'ok' if traj['ordem_ok'] else 'FORA'}"
-          + (f", erros em {traj['argumentos_invalidos']}" if traj["argumentos_invalidos"] else ""))
-    print(f"    mundo ....... {res['criados']} parecer(es) criado(s), esperado {res['esperados']}"
-          + ("   DUPLICADO" if res["duplicado"] else "   AUSENTE" if res["ausente"] else ""))
+
+    print("    TEXTO — o que a resposta diz")
+    print(f"      veredito {texto['veredito_obtido']}, correto? ........ {sim_nao(texto['veredito_correto'])}")
+    print(f"      a citação veio das ferramentas? ...... {sim_nao(texto['citacao_verificavel'])}")
+
+    print("    TRAJETÓRIA — o caminho até a resposta")
+    print(f"      ferramentas chamadas: {' -> '.join(caminho['obtido']) or '(nenhuma)'}")
+    print(f"      cobertura do esperado ................ {caminho['cobertura']:.0%}")
+    print(f"      na ordem certa? ...................... {sim_nao(caminho['ordem_ok'])}")
+    print(f"      chamadas supérfluas .................. {caminho['superfluas'] or 'nenhuma'}")
+    print(f"      chamadas que deram erro .............. {caminho['argumentos_invalidos'] or 'nenhuma'}")
+
+    print("    RESULTADO — o que ficou feito no mundo")
+    print(f"      pareceres criados .................... {mundo['criados']} (esperado {mundo['esperados']})")
 
 
 print("1 — OS INCIDENTES, COMO FORAM GRAVADOS")

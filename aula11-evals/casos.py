@@ -1,8 +1,8 @@
 # O GOLDEN DATASET do agente de despesas.
 #
 # Não é "dados de teste": é um conjunto REVISADO e VERSIONADO, e cada caso
-# declara de onde veio. A versão entra no carimbo — mudar o conjunto
-# invalida a comparação com as execuções anteriores.
+# declara de onde veio. Mudar o conjunto invalida a comparação com as
+# execuções anteriores.
 #
 #   origem          producao > desenvolvimento > sintetico (a qualidade da fonte)
 #   classe          o agrupamento do relatório por fatia (caso 08)
@@ -129,7 +129,7 @@ CASOS = [
 # trace de quando ele aconteceu — no formato de mensagens da OpenAI, que o
 # `sistema.trace_das_mensagens` aceita.
 
-def _chamada(id_, nome, **args):
+def chamada(id_, nome, **args):
     return {"id": id_, "type": "function",
             "function": {"name": nome, "arguments": json.dumps(args, ensure_ascii=False)}}
 
@@ -141,13 +141,13 @@ TRACES_GRAVADOS = [
      "o_que_houve": "timeout no primeiro registro; o agente tentou de novo com OUTRA chave",
      "mensagens": [
          {"role": "user", "content": "Registre o parecer da despesa D-4612."},
-         {"role": "assistant", "content": "", "tool_calls": [_chamada("t1", "consultar_despesa", despesa="D-4612")]},
+         {"role": "assistant", "content": "", "tool_calls": [chamada("t1", "consultar_despesa", despesa="D-4612")]},
          {"role": "tool", "tool_call_id": "t1", "content": '{"despesa": "D-4612", "categoria": "refeicao", "valor": 138.0}'},
-         {"role": "assistant", "content": "", "tool_calls": [_chamada("t2", "consultar_politica", categoria="refeicao")]},
+         {"role": "assistant", "content": "", "tool_calls": [chamada("t2", "consultar_politica", categoria="refeicao")]},
          {"role": "tool", "tool_call_id": "t2", "content": _POLITICA_REFEICAO},
-         {"role": "assistant", "content": "", "tool_calls": [_chamada("t3", "registrar_parecer", despesa="D-4612", veredito="reprovado", chave="D-4612-1")]},
+         {"role": "assistant", "content": "", "tool_calls": [chamada("t3", "registrar_parecer", despesa="D-4612", veredito="reprovado", chave="D-4612-1")]},
          {"role": "tool", "tool_call_id": "t3", "content": '{"parecer": "P-1000", "despesa": "D-4612", "veredito": "reprovado", "ja_existia": false}'},
-         {"role": "assistant", "content": "", "tool_calls": [_chamada("t4", "registrar_parecer", despesa="D-4612", veredito="reprovado", chave="D-4612-retry")]},
+         {"role": "assistant", "content": "", "tool_calls": [chamada("t4", "registrar_parecer", despesa="D-4612", veredito="reprovado", chave="D-4612-retry")]},
          {"role": "tool", "tool_call_id": "t4", "content": '{"parecer": "P-1001", "despesa": "D-4612", "veredito": "reprovado", "ja_existia": false}'},
          {"role": "assistant", "content": "Parecer registrado: a despesa D-4612 (R$ 138,00) excede o teto de R$ 120,00 do art. 7º. Veredito: reprovado."},
      ],
@@ -157,7 +157,7 @@ TRACES_GRAVADOS = [
      "o_que_houve": "aprovou sem consultar política nem regulamento: R$ 590 'pareceu razoável'",
      "mensagens": [
          {"role": "user", "content": "A despesa D-4613 está dentro da política? Foi em Lisboa."},
-         {"role": "assistant", "content": "", "tool_calls": [_chamada("p1", "consultar_despesa", despesa="D-4613")]},
+         {"role": "assistant", "content": "", "tool_calls": [chamada("p1", "consultar_despesa", despesa="D-4613")]},
          {"role": "tool", "tool_call_id": "p1", "content": '{"despesa": "D-4613", "categoria": "hospedagem", "valor": 590.0, "internacional": true}'},
          {"role": "assistant", "content": "A hospedagem de R$ 590,00 em Lisboa é um valor compatível com a política. Veredito: aprovado."},
      ],

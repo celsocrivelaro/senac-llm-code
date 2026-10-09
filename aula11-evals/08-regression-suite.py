@@ -17,13 +17,13 @@
 #
 #     python 08-regression-suite.py          # o caso mais caro: ver CUSTO
 
+import hashlib
 import statistics
 from collections import Counter
 
 from casos import CASOS, SYSTEM
-from metricas import (nivel_deterministico, nivel_resultado, nivel_trajetoria,
-                      particao, passou)
-from sistema import MODELO, PARECERES, PROVEDOR, carimbo, limpar_pareceres, rodar
+from metricas import nivel_deterministico, nivel_resultado, nivel_trajetoria, passou
+from sistema import MODELO, PARECERES, PROVEDOR, limpar_pareceres, rodar
 
 # CUSTO: execuções do agente = casos de desenvolvimento x REPETICOES x 3
 # (A, A de novo para o ruído, e B) + holdout x 2. Com 9 casos e
@@ -41,6 +41,17 @@ REGRA = {
     "piora_maxima_por_fatia": 0.05,        # nenhuma classe cai mais que 5 pontos
     "holdout_nao_pode_piorar": True,       # confirmação final, em casos nunca olhados
 }
+
+
+
+def particao(caso_id: str, fracao_holdout: float = 0.3) -> str:
+    """'holdout' ou 'desenvolvimento', decidido pelo hash do id.
+
+    `hash()` do Python muda a cada processo; o SHA-256 não. A divisão
+    precisa ser a mesma hoje e daqui a um mês, ou o holdout vaza."""
+    balde = int(hashlib.sha256(caso_id.encode()).hexdigest(), 16) % 100
+    return "holdout" if balde < fracao_holdout * 100 else "desenvolvimento"
+
 
 DESENVOLVIMENTO = [c for c in CASOS if particao(c["id"]) == "desenvolvimento"]
 HOLDOUT = [c for c in CASOS if particao(c["id"]) == "holdout"]
@@ -118,7 +129,3 @@ for r in b["ultima"]:
         print(f"  {r['id']} [{r['classe']}]  veredito {r['deterministico']['veredito_obtido']}"
               f"  citação {'ok' if r['deterministico']['citacao_verificavel'] else 'FALTOU'}"
               f"  pareceres {r['resultado']['criados']}/{r['resultado']['esperados']}")
-
-print("\n5 — CARIMBO")
-for campo, valor in carimbo().items():
-    print(f"  {campo:<16} {valor}")
