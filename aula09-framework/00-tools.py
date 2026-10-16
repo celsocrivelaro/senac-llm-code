@@ -23,8 +23,12 @@ agent = create_agent(
     system_prompt="Aja como um assistente",
 )
 
+# result = agent.invoke(
+#     {"messages": [HumanMessage(content="Como está o tempo na cidade de São Paulo?")]}
+# )
+
 result = agent.invoke(
-    {"messages": [HumanMessage(content="Como está o tempo na cidade de São Paulo?")]}
+    {"messages": [HumanMessage(content="O gato caiu do telhado")]}
 )
 
 for mensagem in result["messages"]:
