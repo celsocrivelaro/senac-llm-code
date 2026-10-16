@@ -1,0 +1,12 @@
+# Só o que o agente importa, com versão fixada. A imagem instala este
+# arquivo, e não o requirements.txt da disciplina inteira: imagem menor,
+# build mais rápido, menos dependência de terceiro dentro do container.
+langchain==1.3.15
+langchain-core==1.5.4
+langgraph==1.2.11
+langchain-mistralai==1.1.6
+langchain-ollama==1.1.0
+ollama==0.6.2
+langchain-groq==1.1.3
+groq==0.37.1
+python-dotenv==1.2.2

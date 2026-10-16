@@ -1,0 +1,53 @@
+# Aula 13 — Dois containers: o banco e a API.
+#
+#     docker compose up --build       # sobe os dois, construindo a imagem da API
+#     docker compose down             # derruba os dois; o volume do banco fica
+#     docker compose down -v          # derruba e APAGA o volume: o banco volta
+#                                     # ao estado do script de inicialização
+#
+# O compose cria uma rede só para estes serviços, e cada um alcança o outro
+# pelo NOME DO SERVIÇO. Por isso a API fala com `banco:5432`, e não com
+# localhost.
+
+services:
+  banco:
+    # Versão fixada até o patch, pela mesma razão da imagem base da API.
+    image: postgres:16.10
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # O ESTADO: os dados do banco vivem num volume nomeado, fora do
+      # container. Recriar o container não apaga a política.
+      - dados:/var/lib/postgresql/data
+      # O SCRIPT DE INICIALIZAÇÃO, somente leitura. Roda uma vez, com o
+      # volume vazio.
+      - ./banco:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # "De pé" não é "pronto": o processo do Postgres sobe antes de aceitar
+      # conexões. O pg_isready diz quando ele aceita.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    # Sem `ports`: o banco só é alcançável de dentro da rede do compose. A
+    # API precisa dele; a máquina hospedeira, não.
+
+  agente:
+    build: .
+    image: auditor-de-despesas-banco:1.0.0
+    # As chaves do modelo, em tempo de execução — como o --env-file do
+    # docker run.
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@banco:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    depends_on:
+      # Espera o banco ficar PRONTO (healthcheck), e não só iniciado.
+      banco:
+        condition: service_healthy
+
+volumes:
+  dados:

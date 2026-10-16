@@ -1,0 +1,19 @@
+# A chave de API nunca entra no repositório. E APAGAR O ARQUIVO NÃO APAGA O
+# SEGREDO: se o .env foi commitado uma vez, a chave continua no histórico,
+# em todo clone. Conferir com:
+#
+#     git log --all -- .env
+#     git log --all -S "_API_KEY=" --oneline
+#
+# Se aparecer alguma coisa, a correção é REVOGAR A CHAVE no provedor.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+.venv/
+__pycache__/
+*.pyc
+
+.pytest_cache/

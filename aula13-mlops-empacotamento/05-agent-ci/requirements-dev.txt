@@ -1,0 +1,5 @@
+# Só para testar: NÃO entra na imagem (o Dockerfile instala só o
+# requirements.txt). O httpx é o que o TestClient do FastAPI usa por baixo.
+-r requirements.txt
+pytest==8.3.4
+httpx==0.28.1

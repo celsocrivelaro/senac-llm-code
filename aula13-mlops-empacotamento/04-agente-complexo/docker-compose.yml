@@ -1,0 +1,60 @@
+# Aula 13 — Três containers: o banco, a memória e a API.
+#
+#     docker compose up --build       # sobe os três
+#     docker compose down             # derruba; os volumes ficam
+#     docker compose down -v          # derruba e APAGA os volumes: o banco
+#                                     # volta aos scripts de inicialização, e
+#                                     # a memória volta vazia
+#
+# Cada serviço alcança o outro pelo NOME DO SERVIÇO na rede do compose:
+# `banco:5432` e `memoria:6379`. Nenhum dos dois publica porta na máquina
+# hospedeira; só a API.
+
+services:
+  banco:
+    image: postgres:16.10
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # Dados fixos e corpus do RAG: nascem dos scripts, vivem no volume.
+      - dados:/var/lib/postgresql/data
+      - ./banco:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  memoria:
+    image: redis:7.4.2
+    # Persistência em arquivo de append (AOF): sem ela, o Redis guarda tudo
+    # só na memória do processo, e reiniciar o container apaga as sessões.
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - memoria:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  agente:
+    build: .
+    image: auditor-de-despesas-complexo:1.0.0
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@banco:5432/${POSTGRES_DB}
+      REDIS_URL: redis://memoria:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      banco:
+        condition: service_healthy
+      memoria:
+        condition: service_healthy
+
+volumes:
+  dados:
+  memoria:

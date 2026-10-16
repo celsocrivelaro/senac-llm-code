@@ -1,0 +1,21 @@
+# O que NÃO entra no contexto de build — e, portanto, não pode ser copiado
+# para a imagem por nenhuma instrução.
+
+# O segredo. Um `COPY .env` seguido de `RUN rm .env` deixaria a chave na
+# camada do COPY: `docker history` a mostra, e `docker save` a extrai.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# O histórico e o ambiente local.
+.git
+.venv
+__pycache__
+*.pyc
+
+# Saídas dos testes.
+tests/
+.github/
+.pytest_cache
