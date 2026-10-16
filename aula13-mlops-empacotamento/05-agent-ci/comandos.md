@@ -57,5 +57,11 @@ Depois, em **Settings > Secrets and variables > Actions**, crie os secrets:
 | `DOCKERHUB_TOKEN` | um token de acesso do Docker Hub (*Account settings > Personal access tokens*), não a senha |
 | `GROQ_API_KEY` | a chave do modelo, para o eval; sem ela, o passo do eval é pulado |
 
+E, na aba **Variables** da mesma tela, a variável:
+
+| Variável | Para quê |
+|---|---|
+| `GROQ_MODELO` | o modelo da Groq usado no eval (ex.: `openai/gpt-oss-20b`). Sem ela, vale o padrão do `cliente.py` |
+
 Cada push para a `main` roda os três jobs; um *pull request* roda só os dois
 primeiros. O andamento fica na aba **Actions** do repositório.

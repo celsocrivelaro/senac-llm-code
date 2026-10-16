@@ -45,7 +45,7 @@ elif PROVEDOR == "ollama":
 elif PROVEDOR == "groq":
     from langchain_groq import ChatGroq
 
-    MODELO = os.environ.get("GROQ_MODELO", "llama-3.3-70b-versatile")
+    MODELO = os.environ.get("GROQ_MODELO") or "openai/gpt-oss-20b"
     # ARMADILHA, espelhada à do Ollama: o `ChatGroq` fala a API nativa e
     # acrescenta `/openai/v1` sozinho. Se o .env trouxer a URL do endpoint
     # compatível com a OpenAI — que é a que a Groq documenta —, o sufixo

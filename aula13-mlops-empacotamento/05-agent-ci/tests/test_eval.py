@@ -10,6 +10,7 @@
 import pytest
 
 from agente import rodar, veredito
+from cliente import MODELO, PROVEDOR
 
 GABARITO = [
     ("A despesa D-4612 está dentro da política?", "reprovado"),   # refeição 138 > 120
@@ -23,6 +24,7 @@ TAXA_MINIMA = 0.75
 
 @pytest.mark.eval
 def test_taxa_de_acerto_contra_o_gabarito():
+    print(f"modelo avaliado: {PROVEDOR}/{MODELO}")
     resultados = []
     for pergunta, esperado in GABARITO:
         obtido = veredito(rodar(pergunta))

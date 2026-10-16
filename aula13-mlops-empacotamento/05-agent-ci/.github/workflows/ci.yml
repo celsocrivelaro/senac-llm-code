@@ -15,9 +15,16 @@
 #   DOCKERHUB_TOKEN     token de acesso do Docker Hub (não a senha)
 #   GROQ_API_KEY        chave do modelo, para o eval; sem ela, o eval é pulado
 #
-# As actions estão fixadas por tag de versão. Uma tag pode ser movida por
-# quem controla o repositório da action; fixar pelo SHA do commit é a forma
-# que não muda — o mesmo argumento da imagem base fixada até o patch.
+# VARIABLE (Settings > Secrets and variables > Actions > Variables):
+#   GROQ_MODELO         o modelo da Groq usado no eval (ex.: openai/gpt-oss-20b).
+#                       Não é segredo, por isso é variável e não secret; se
+#                       também existir como secret, a variável prevalece. Sem
+#                       nenhuma das duas, vale o padrão do cliente.py.
+#
+# As actions estão fixadas por tag de versão, exceto a do Trivy, fixada pelo
+# SHA. Uma tag pode ser movida por quem controla o repositório da action;
+# fixar pelo SHA do commit é a forma que não muda — o mesmo argumento da
+# imagem base fixada até o patch.
 
 name: ci
 
@@ -71,6 +78,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_MODELO: ${{ vars.GROQ_MODELO || secrets.GROQ_MODELO }}
     steps:
       - uses: actions/checkout@v4
 
