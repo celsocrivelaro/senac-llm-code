@@ -110,8 +110,7 @@ autonomia é também um degrau de superfície**.
 
 O **conjunto de casos hostis**, ao lado do *golden dataset* da aula 11. E a
 suíte passa a reportar **duas taxas separadas**: sucesso em casos
-representativos, e resistência em casos hostis. A aula 16 roda a mesma
-suíte hostil sobre a versão multiagente.
+representativos, e resistência em casos hostis.
 
 ## Custo
 
