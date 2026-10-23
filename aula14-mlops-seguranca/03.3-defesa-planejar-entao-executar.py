@@ -1,6 +1,6 @@
 # Aula 14 — 03.3: PADRÕES DE DEFESA, PLANEJAR-ENTÃO-EXECUTAR.
 #
-# O mesmo ataque do 01.1 (o art. 31 envenenado) contra o padrão
+# O mesmo ataque do 01.ASI01 (o art. 31 envenenado) contra o padrão
 # planejar-então-executar.
 #
 # Cada defesa também recebe uma pergunta legítima, para mostrar o que custou:

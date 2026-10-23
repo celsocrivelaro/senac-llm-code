@@ -1,6 +1,6 @@
 # Aula 14 — 03.4: PADRÕES DE DEFESA, LLM DUPLO.
 #
-# O mesmo ataque do 01.1 (o art. 31 envenenado) contra o padrão LLM duplo.
+# O mesmo ataque do 01.ASI01 (o art. 31 envenenado) contra o padrão LLM duplo.
 #
 # Cada defesa também recebe uma pergunta legítima, para mostrar o que custou:
 # uma defesa que resiste ao ataque mas erra a pergunta legítima tirou

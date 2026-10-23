@@ -46,13 +46,15 @@ resolve com um classificador melhor.
 
 | Script | O que produz |
 |---|---|
-| `00-injecao-direta.py` | A mesma pergunta, limpa e com uma instrução injetada pelo usuário: o agente deixa de consultar a política e aprova. |
-| `01.1-injecao-documento.py` | Injeção indireta pelo documento recuperado: o art. 31 do corpus, sem e com o parágrafo do atacante. |
-| `01.2-injecao-descricao-ferramenta.py` | Injeção indireta pela descrição de ferramenta: a mesma função, com a descrição original e com a envenenada. |
-| `01.3-injecao-memoria.py` | Injeção indireta pela memória: os mesmos registros, sem e com o gravado pelo atacante. |
-| `02.1-trifecta-tres-pernas.py` | A exfiltração completa: o agente lê o dado privado, recebe o art. 31 envenenado e envia. |
-| `02.2-trifecta-sem-envio.py` | O mesmo ataque sem a ferramenta de envio: o dado privado é lido, mas não sai. |
-| `02.3-trifecta-sem-dado-privado.py` | O mesmo ataque sem a ferramenta que lê dado privado: o envio acontece, sem nada privado. |
+| `00.ASI01-injecao-direta.py` | A mesma pergunta, limpa e com uma instrução injetada pelo usuário: o agente deixa de consultar a política e aprova. |
+| `01.ASI01-injecao-documento.py` | Injeção indireta pelo documento recuperado: o art. 31 do corpus, sem e com o parágrafo do atacante. |
+| `01.ASI02-uso-indevido-de-ferramenta.py` | Uso indevido de ferramenta: o objetivo não muda, mas a ferramenta de registro, legítima, é chamada para despesas que ninguém pediu. Depois, a mesma ferramenta validada em código. |
+| `01.ASI04-injecao-descricao-ferramenta.py` | Injeção indireta pela descrição de ferramenta: a mesma função, com a descrição original e com a envenenada. |
+| `01.ASI06-injecao-memoria.py` | Injeção indireta pela memória: os mesmos registros, sem e com o gravado pelo atacante. |
+| `01.ASI09-confianca-humano-agente.py` | Exploração da confiança humano-agente: há confirmação humana antes do pagamento, mas a tela é o resumo escrito pelo agente, e o aprovador paga ao atacante. Depois, a tela montada pelo código e conferida contra o cadastro. |
+| `02.1.ASI01-trifecta-tres-pernas.py` | A exfiltração completa: o agente lê o dado privado, recebe o art. 31 envenenado e envia. |
+| `02.2.ASI01-trifecta-sem-envio.py` | O mesmo ataque sem a ferramenta de envio: o dado privado é lido, mas não sai. |
+| `02.3.ASI01-trifecta-sem-dado-privado.py` | O mesmo ataque sem a ferramenta que lê dado privado: o envio acontece, sem nada privado. |
 | `03.1-defesa-nenhuma.py` | O ataque do art. 31 contra o agente sem defesa, e a pergunta legítima, como referência para os três seguintes. |
 | `03.2-defesa-minimizacao-de-contexto.py` | O mesmo ataque contra a minimização de contexto. A pergunta legítima mostra **o que o agente deixou de conseguir fazer**. |
 | `03.3-defesa-planejar-entao-executar.py` | O mesmo ataque contra planejar-então-executar, com a mesma pergunta legítima. |
@@ -64,13 +66,15 @@ resolve com um classificador melhor.
 Os comandos:
 
 ```
-python 00-injecao-direta.py
-python 01.1-injecao-documento.py
-python 01.2-injecao-descricao-ferramenta.py
-python 01.3-injecao-memoria.py
-python 02.1-trifecta-tres-pernas.py
-python 02.2-trifecta-sem-envio.py
-python 02.3-trifecta-sem-dado-privado.py
+python 00.ASI01-injecao-direta.py
+python 01.ASI01-injecao-documento.py
+python 01.ASI02-uso-indevido-de-ferramenta.py
+python 01.ASI04-injecao-descricao-ferramenta.py
+python 01.ASI06-injecao-memoria.py
+python 01.ASI09-confianca-humano-agente.py
+python 02.1.ASI01-trifecta-tres-pernas.py
+python 02.2.ASI01-trifecta-sem-envio.py
+python 02.3.ASI01-trifecta-sem-dado-privado.py
 python 03.1-defesa-nenhuma.py
 python 03.2-defesa-minimizacao-de-contexto.py
 python 03.3-defesa-planejar-entao-executar.py
@@ -80,13 +84,53 @@ python 04.2-red-team-minimizacao.py
 python 04.3-red-team-llm-duplo.py
 ```
 
+## Os scripts e os riscos da OWASP
+
+O de-para entre cada script e o risco do catálogo da OWASP para aplicações
+agênticas (ASI01 a ASI10) que ele demonstra ou mitiga. Onde cabe, o
+equivalente no catálogo para aplicações de LLM (LLM01 a LLM10).
+
+| Script | Papel | Risco principal | Também aparece |
+|---|---|---|---|
+| `00.ASI01-injecao-direta.py` | ataque | ASI01, sequestro de objetivo, por via direta | LLM01, injeção de prompt |
+| `01.ASI01-injecao-documento.py` | ataque | ASI01, pelo documento recuperado | LLM01, indireta |
+| `01.ASI02-uso-indevido-de-ferramenta.py` | ataque e mitigação | ASI02, uso indevido e exploração de ferramenta | LLM06, agência excessiva; a mitigação valida escopo e consistência na ferramenta |
+| `01.ASI04-injecao-descricao-ferramenta.py` | ataque | ASI04, cadeia de suprimentos (*tool poisoning*) | ASI02, o agente chama `consultar_credenciais` |
+| `01.ASI06-injecao-memoria.py` | ataque | ASI06, envenenamento de memória | ASI01, na execução seguinte |
+| `01.ASI09-confianca-humano-agente.py` | ataque e mitigação | ASI09, exploração da confiança humano-agente | entra pelo retorno de ferramenta (ASI01); a mitigação tira do modelo a escrita da tela de confirmação |
+| `02.1.ASI01-trifecta-tres-pernas.py` | ataque | ASI01, levando à exfiltração | ASI02 (o envio usado indevidamente), ASI03 (ferramenta com alcance demais), LLM02 (dado sensível exposto) |
+| `02.2.ASI01-trifecta-sem-envio.py` | mitigação | ASI02 | retira a ferramenta de saída |
+| `02.3.ASI01-trifecta-sem-dado-privado.py` | mitigação | ASI03 | menor privilégio: retira a ferramenta que lê dado privado |
+| `03.1-defesa-nenhuma.py` | referência | ASI01, sem defesa | — |
+| `03.2-defesa-minimizacao-de-contexto.py` | mitigação | ASI01, o parágrafo injetado | ASI06, a memória fica fora do contexto |
+| `03.3-defesa-planejar-entao-executar.py` | mitigação | ASI01, o desvio de plano | não cobre o argumento contaminado |
+| `03.4-defesa-llm-duplo.py` | mitigação | ASI01 | o documento é lido em quarentena, sem ferramentas |
+| `04.1` a `04.3` | suíte hostil | os casos abaixo, contra três configurações | — |
+
+Os casos da suíte hostil:
+
+| Caso | Canal | Risco |
+|---|---|---|
+| H-01 | direto | ASI01, LLM01 |
+| H-02 | documento | ASI01 |
+| H-03 | memória | ASI06 |
+| H-04 | descrição de ferramenta | ASI04, ASI02 |
+| H-05 | documento, com o texto injetado devolvido ao usuário | ASI01 |
+| H-06 | documento, que amplia o uso da ferramenta de registro | ASI02 |
+
+**Sem script nesta pasta.** ASI05 (execução inesperada de código) é tratado
+na nota 02, como isolamento. ASI07 e ASI08 (comunicação entre agentes e falha
+em cascata) são demonstrados no `05-fronteira-hostil.py` da aula de sistemas
+multiagente. ASI10 (agentes desgovernados) aparece só na tabela
+da nota 01.
+
 ## As três coisas que esta pasta demonstra
 
 **1. O problema não é o texto, é o privilégio.** O `00` mostra uma frase
 educada, escrita no próprio campo da pergunta, mudando o que o agente faz. A
 instrução maliciosa não precisa parecer maliciosa — basta parecer instrução.
 
-**2. A memória é o canal que assusta.** No `01.3`, o registro
+**2. A memória é o canal que assusta.** No `01.ASI06`, o registro
 envenenado foi gravado numa conversa anterior e age agora. O atacante não está presente,
 o usuário afetado não é o atacante, e nada na segunda execução aponta para a
 primeira.
@@ -115,5 +159,5 @@ representativos, e resistência em casos hostis.
 ## Custo
 
 Todos os scripts chamam o modelo. Cada `03.x` roda duas perguntas; cada
-`04.x` roda oito casos — são os mais caros da pasta. O LLM duplo faz uma chamada de quarentena por documento, mais as do
+`04.x` roda nove casos — são os mais caros da pasta. O LLM duplo faz uma chamada de quarentena por documento, mais as do
 agente.

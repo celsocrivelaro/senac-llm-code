@@ -1,6 +1,6 @@
 # Aula 14 — 03.1: PADRÕES DE DEFESA, SEM DEFESA.
 #
-# O mesmo ataque do 01.1 (o art. 31 envenenado) contra o agente sem defesa,
+# O mesmo ataque do 01.ASI01 (o art. 31 envenenado) contra o agente sem defesa,
 # como referência para os scripts 03.2, 03.3 e 03.4. O agente também recebe
 # a pergunta legítima que as defesas recebem.
 

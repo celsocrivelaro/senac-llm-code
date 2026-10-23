@@ -1,4 +1,4 @@
-# Aula 14 — 01.3: INJEÇÃO INDIRETA PELA MEMÓRIA.
+# Aula 14 — 01.ASI06: INJEÇÃO INDIRETA PELA MEMÓRIA.
 #
 # A pergunta do usuário é limpa. O atacante gravou um registro na memória numa
 # conversa anterior, e o registro volta agora, para outro usuário. O ataque

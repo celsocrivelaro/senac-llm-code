@@ -1,6 +1,6 @@
 # Aula 14 — 03.2: PADRÕES DE DEFESA, MINIMIZAÇÃO DE CONTEXTO.
 #
-# O mesmo ataque do 01.1 (o art. 31 envenenado) contra a minimização de
+# O mesmo ataque do 01.ASI01 (o art. 31 envenenado) contra a minimização de
 # contexto.
 #
 # Cada defesa também recebe uma pergunta legítima, para mostrar o que custou:
