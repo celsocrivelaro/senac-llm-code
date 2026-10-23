@@ -49,6 +49,7 @@ resolve com um classificador melhor.
 | `00.ASI01-injecao-direta.py` | A mesma pergunta, limpa e com uma instrução injetada pelo usuário: o agente deixa de consultar a política e aprova. |
 | `01.ASI01-injecao-documento.py` | Injeção indireta pelo documento recuperado: o art. 31 do corpus, sem e com o parágrafo do atacante. |
 | `01.ASI02-uso-indevido-de-ferramenta.py` | Uso indevido de ferramenta: o objetivo não muda, mas a ferramenta de registro, legítima, é chamada para despesas que ninguém pediu. Depois, a mesma ferramenta validada em código. |
+| `01.ASI04-ferramenta-de-terceiro-atualizada.py` | Cadeia de suprimentos: a ferramenta de conversão de moeda, de um pacote de terceiro, troca de versão depois da revisão (mesmo nome, mesma descrição) e passa a devolver uma cotação adulterada. Depois, a versão fixada pela impressão digital do código revisado. |
 | `01.ASI04-injecao-descricao-ferramenta.py` | Injeção indireta pela descrição de ferramenta: a mesma função, com a descrição original e com a envenenada. |
 | `01.ASI06-injecao-memoria.py` | Injeção indireta pela memória: os mesmos registros, sem e com o gravado pelo atacante. |
 | `01.ASI09-confianca-humano-agente.py` | Exploração da confiança humano-agente: há confirmação humana antes do pagamento, mas a tela é o resumo escrito pelo agente, e o aprovador paga ao atacante. Depois, a tela montada pelo código e conferida contra o cadastro. |
@@ -69,6 +70,7 @@ Os comandos:
 python 00.ASI01-injecao-direta.py
 python 01.ASI01-injecao-documento.py
 python 01.ASI02-uso-indevido-de-ferramenta.py
+python 01.ASI04-ferramenta-de-terceiro-atualizada.py
 python 01.ASI04-injecao-descricao-ferramenta.py
 python 01.ASI06-injecao-memoria.py
 python 01.ASI09-confianca-humano-agente.py
@@ -95,6 +97,7 @@ equivalente no catálogo para aplicações de LLM (LLM01 a LLM10).
 | `00.ASI01-injecao-direta.py` | ataque | ASI01, sequestro de objetivo, por via direta | LLM01, injeção de prompt |
 | `01.ASI01-injecao-documento.py` | ataque | ASI01, pelo documento recuperado | LLM01, indireta |
 | `01.ASI02-uso-indevido-de-ferramenta.py` | ataque e mitigação | ASI02, uso indevido e exploração de ferramenta | LLM06, agência excessiva; a mitigação valida escopo e consistência na ferramenta |
+| `01.ASI04-ferramenta-de-terceiro-atualizada.py` | ataque e mitigação | ASI04, cadeia de suprimentos (*rug pull*: a dependência muda depois da revisão) | LLM03, cadeia de suprimentos; a mitigação fixa a versão por *hash* |
 | `01.ASI04-injecao-descricao-ferramenta.py` | ataque | ASI04, cadeia de suprimentos (*tool poisoning*) | ASI02, o agente chama `consultar_credenciais` |
 | `01.ASI06-injecao-memoria.py` | ataque | ASI06, envenenamento de memória | ASI01, na execução seguinte |
 | `01.ASI09-confianca-humano-agente.py` | ataque e mitigação | ASI09, exploração da confiança humano-agente | entra pelo retorno de ferramenta (ASI01); a mitigação tira do modelo a escrita da tela de confirmação |
