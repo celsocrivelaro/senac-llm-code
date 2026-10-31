@@ -14,25 +14,39 @@
 # Não há trace nem log neste arquivo, de propósito: a métrica perde o
 # detalhe de cada consulta — e é por isso que é barata e serve a alertas.
 
+import os
 import time
 
 import requests
+from dotenv import load_dotenv
 from opentelemetry import metrics
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+from opentelemetry.sdk.metrics.export import InMemoryMetricReader, PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 
 API = "https://pokeapi.co/api/v2"
+
+# O mesmo .env do `agente.py`: as variáveis OTEL_EXPORTER_OTLP_* dizem para
+# onde a telemetria vai.
+load_dotenv()
 
 
 # =====================================================================
 #  1. A configuração
 # =====================================================================
-# As métricas ficam em memória, para serem impressas no fim; num serviço de
-# verdade, iriam por OTLP para a plataforma.
+# As métricas ficam em memória, para serem impressas no fim, e, com
+# endpoint no .env, também vão por OTLP para a plataforma. Uma métrica não é
+# enviada a cada medida: um LEITOR PERIÓDICO coleta o agregado a cada
+# intervalo (60 s, por padrão) e envia o agregado inteiro.
 recurso = Resource.create({"service.name": "montador-de-times", "service.version": "1.0.0"})
 leitor_de_metricas = InMemoryMetricReader()
-metrics.set_meter_provider(MeterProvider(resource=recurso, metric_readers=[leitor_de_metricas]))
+leitores = [leitor_de_metricas]
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    # O exportador acrescenta /v1/metrics ao endpoint.
+    leitores.append(PeriodicExportingMetricReader(OTLPMetricExporter()))
+provedor_de_metricas = MeterProvider(resource=recurso, metric_readers=leitores)
+metrics.set_meter_provider(provedor_de_metricas)
 medidor = metrics.get_meter("montador-de-times")
 
 
@@ -94,3 +108,8 @@ for recurso_metricas in dados.resource_metrics:
                     print(f"      {atributos}  chamadas={ponto.count}  soma={ponto.sum:.2f}s  min={ponto.min * 1000:,.0f}ms  max={ponto.max * 1000:,.0f}ms")
                 else:
                     print(f"      {atributos}  total={ponto.value}")
+
+# O programa termina antes do primeiro intervalo: o shutdown faz uma última
+# coleta e envia o agregado. Na plataforma, os nomes chegam adaptados, como
+# `http_client_request_duration_seconds` e `time_pokemon_total`.
+provedor_de_metricas.shutdown()

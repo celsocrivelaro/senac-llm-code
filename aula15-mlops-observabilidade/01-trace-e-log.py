@@ -18,31 +18,46 @@
 # agente, e os spans são as chamadas ao modelo e às ferramentas.
 
 import logging
+import os
 import time
 
 import requests
+from dotenv import load_dotenv
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-from opentelemetry.sdk._logs.export import InMemoryLogRecordExporter, SimpleLogRecordProcessor
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor, InMemoryLogRecordExporter, SimpleLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 API = "https://pokeapi.co/api/v2"
+
+# O mesmo .env do `agente.py`: as variáveis OTEL_EXPORTER_OTLP_* dizem para
+# onde a telemetria vai.
+load_dotenv()
+ENVIAR = bool(os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"))
 
 
 # =====================================================================
 #  1. A configuração: quem emite, e para onde vai
 # =====================================================================
 # O RESOURCE identifica o programa que emite: vai junto de todo span e de
-# todo log. Os dois ficam em memória, para serem impressos no fim; num
-# serviço de verdade, iriam por OTLP para a plataforma, como no `agente.py`.
+# todo log. O `service.name` escrito aqui prevalece sobre o OTEL_SERVICE_NAME
+# do .env, e o programa aparece na plataforma com nome próprio, separado do
+# agente. Os dois sinais ficam em memória, para serem impressos no fim, e,
+# com endpoint no .env, também vão por OTLP para a plataforma, como no
+# `agente.py`.
 recurso = Resource.create({"service.name": "buscador-de-pokemon", "service.version": "1.0.0"})
 
 spans_em_memoria = InMemorySpanExporter()
 provedor_de_traces = TracerProvider(resource=recurso)
 provedor_de_traces.add_span_processor(SimpleSpanProcessor(spans_em_memoria))
+if ENVIAR:
+    # O exportador acrescenta /v1/traces ao endpoint.
+    provedor_de_traces.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
 trace.set_tracer_provider(provedor_de_traces)
 tracer = trace.get_tracer("buscador-de-pokemon")
 
@@ -53,6 +68,9 @@ tracer = trace.get_tracer("buscador-de-pokemon")
 logs_em_memoria = InMemoryLogRecordExporter()
 provedor_de_logs = LoggerProvider(resource=recurso)
 provedor_de_logs.add_log_record_processor(SimpleLogRecordProcessor(logs_em_memoria))
+if ENVIAR:
+    # O exportador acrescenta /v1/logs ao endpoint.
+    provedor_de_logs.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
 
 log = logging.getLogger("buscador-de-pokemon")
 log.setLevel(logging.INFO)
@@ -129,5 +147,7 @@ for registro in logs_em_memoria.get_finished_logs():
     linha = registro.log_record
     print(f"  {linha.severity_text:<7} trace {linha.trace_id:032x}  span {nome_do_span.get(linha.span_id, '?'):<28}  {linha.body}")
 
+# O envio é em lote e em segundo plano: o shutdown esvazia a fila antes de
+# sair. Falha de rede ou de credencial aparece como "Failed to export".
 provedor_de_traces.shutdown()
 provedor_de_logs.shutdown()

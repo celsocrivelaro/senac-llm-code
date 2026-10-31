@@ -32,6 +32,14 @@ O modelo e a telemetria são configurados no `.env` desta pasta
 (`cp .env.example .env`). Sem `OTEL_EXPORTER_OTLP_ENDPOINT`, o agente roda
 igual e os *spans* não saem do processo.
 
+O `01-trace-e-log.py` e o `02-metricas.py` leem o mesmo `.env`: com o
+endpoint preenchido, além de imprimir, enviam a telemetria para a mesma
+plataforma, cada um com o seu nome de serviço (`buscador-de-pokemon` e
+`montador-de-times`). No Grafana Cloud, os *traces* aparecem no Tempo, os
+logs no Loki — cada linha com o `trace_id` da busca em que foi escrita — e
+as métricas no Mimir (Prometheus), com nomes adaptados:
+`http_client_request_duration_seconds` e `time_pokemon_total`.
+
 ## As duas coisas que esta pasta demonstra
 
 **1. Convenção aberta em vez de formato próprio.** O `agente.py` emite o
