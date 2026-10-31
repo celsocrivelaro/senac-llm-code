@@ -55,8 +55,12 @@ medidor = metrics.get_meter("montador-de-times")
 # =====================================================================
 # Métrica TÉCNICA, com o nome e a unidade da convenção semântica de HTTP.
 # Um histograma guarda a DISTRIBUIÇÃO das durações; é dele que a plataforma
-# tira p50 e p95.
-duracao_http = medidor.create_histogram("http.client.request.duration", unit="s", description="Duração das chamadas HTTP feitas pelo programa")
+# tira p50 e p95. A distribuição é guardada em FAIXAS, e as faixas padrão
+# do SDK (0, 5, 10, 25, ...) foram pensadas para milissegundos: em segundos,
+# toda chamada cairia na primeira e os percentis não diriam nada. As faixas
+# abaixo são as que a convenção semântica de HTTP recomenda.
+FAIXAS_EM_SEGUNDOS = [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+duracao_http = medidor.create_histogram("http.client.request.duration", unit="s", description="Duração das chamadas HTTP feitas pelo programa", explicit_bucket_boundaries_advisory=FAIXAS_EM_SEGUNDOS)
 
 # Métrica de NEGÓCIO: quantos pokémon de cada tipo entraram nos times. O
 # tipo tem poucos valores (18), por isso serve de atributo de métrica; o
